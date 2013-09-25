@@ -36,7 +36,7 @@ class UrlEncryptor
     
     public function encrypt($secret)
     {
-        $key = $this->secret;  // Clé de 8 caractères max
+        $key = $this->secret; 
         $secret = serialize($secret);
         $td = mcrypt_module_open(MCRYPT_DES,"",MCRYPT_MODE_ECB,"");
         $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
