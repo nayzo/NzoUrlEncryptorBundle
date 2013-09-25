@@ -45,7 +45,7 @@
 <pre>
 // use to encrypt the id in the url
 
- <code>&lt; <a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> My Link </a> &gt;</code>
+ <code>&lt;a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}" &gt;My link &lt;/a&gt;</code>
 
 </pre>
 
