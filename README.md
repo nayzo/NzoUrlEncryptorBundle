@@ -33,9 +33,35 @@
 </pre>
 
 <h4>Configure your application's config.yml</h4>
+<p>The secure value in the configuration must contain a random key string of maximum 8 caracters and minimum of one caracter.</p>
 
 <pre><span class="c1"># app/config/config.yml</span>
 <span class="l-Scalar-Plain">nzo_url_encryptor</span><span class="p-Indicator">:</span>
     <span class="l-Scalar-Plain">secret</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">YourSecretEncryptionKey</span> 
 </pre>
 
+<h4>Use in Twig template</h4>
+
+<pre>
+// use to encrypt the id in the url
+
+<a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> Click me </a>
+
+</pre>
+
+<h4>Use in Controller</h4>
+
+<pre>
+// use to decrypt the encrypted 'Id' comming from the routing
+
+    public function indexAction($encrypted_id) 
+    {
+        $Id = $this->get('nzo_url_encryptor')->decrypt($encrypted_id);
+
+        //....
+    }    
+</pre>
+
+<h4>Note</h4>
+
+<p>the 
