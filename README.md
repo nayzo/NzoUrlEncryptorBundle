@@ -4,11 +4,11 @@
 
 <h1>Documentation</h1>
 
-<h2>Getting Started With NzoUrlEncryptorBundle</h2>
+<h3>Getting Started With NzoUrlEncryptorBundle</h3>
 
 <p>The <strong>UrlEncryptorBundle</strong> is easy to install, it contain a global configuration option to make the use more easier.</p>
 
-<h2>Installation via Composer</2>
+<h4>Installation via Composer</h4>
 
 <pre><span class="p">{</span>
     <span class="s2">"require"</span><span class="o">:</span> <span class="p">{</span>
@@ -17,7 +17,7 @@
 <span class="p">}</span>
 </pre>
  
-<h2>Enable the bundle</2>
+<h4>Enable the bundle</h4>
 <p> Enable the bundle in the kernel:</p>
 
 <pre><span class="o">&lt;?</span><span class="nx">php</span>
@@ -32,7 +32,7 @@
 <span class="p">}</span>
 </pre>
 
-<h2>Configure your application's config.yml</h2>
+<h4>Configure your application's config.yml</h4>
 
 <pre><span class="c1"># app/config/config.yml</span>
 <span class="l-Scalar-Plain">nzo_url_encryptor</span><span class="p-Indicator">:</span>
