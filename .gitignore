@@ -1,5 +1,4 @@
 phpunit.xml
-Tests/autoload.php
 nbproject
 composer.lock
 composer.phar
