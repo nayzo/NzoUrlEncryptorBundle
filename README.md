@@ -1,8 +1,6 @@
 <h1>NzoUrlEncryptorBundle</h1>
 
-<p>The <strong>UrlEncryptorBundle</strong> is a Symfony2 Bundle used to Encrypt and Decrypt the variables in url and links and to provide more security in term of access to your project.</p>
-
-[![Build Status](https://travis-ci.org/NAYZO/NzoUrlEncryptorBundle.png?branch=master)](https://travis-ci.org/NAYZO/NzoUrlEncryptorBundle)
+<p>The <strong>UrlEncryptorBundle</strong> is a Symfony2 Bundle used to Encrypt and Decrypt the variables passed to the url and links and to provide more security in term of access to your project.</p>
 
 <h1>Documentation</h1>
 
