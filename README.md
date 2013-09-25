@@ -73,4 +73,6 @@ In the controller use the decrypt service on the encrypted 'variable' comming fr
 License
 -------
 
-This bundle is under the MIT license. 
+This bundle is under the MIT license. See the complete license in the bundle:
+
+See [Resources/doc/LICENSE](https://github.com/NAYZO/NzoUrlEncryptorBundle/tree/master/Resources/doc/LICENSE)

@@ -59,7 +59,7 @@ In your twig template use the filter to encrypt the variable in the url:
  <code>&lt;a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}" &gt;My link &lt;/a&gt;</code>
 </pre>
 
-In the controller use the decrypt service on the encrypted 'variable' comming from the routing:
+In the controller use to decrypt service on the encrypted 'Id' comming from the routing
 
 ```php
      public function indexAction($encrypted_id) 
@@ -73,4 +73,6 @@ In the controller use the decrypt service on the encrypted 'variable' comming fr
 License
 -------
 
-This bundle is under the MIT license. 
+This bundle is under the MIT license. See the complete license in the bundle:
+
+See [Resources/doc/LICENSE](https://github.com/NAYZO/NzoUrlEncryptorBundle/tree/master/Resources/doc/LICENSE)
