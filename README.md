@@ -2,11 +2,14 @@
 
 <p>The <strong>UrlEncryptorBundle</strong> is a Symfony2 Bundle used to Encrypt and Decrypt the variables in url and links and to provide more security in term of access to your project.</p>
 
+[![Latest Stable Version](https://poser.pugx.org/knplabs/knp-menu-bundle/v/stable.png)](https://packagist.org/packages/nzo/url-encryptor-bundle)
+
+
 <h1>Documentation</h1>
 
 <h3>Getting Started With NzoUrlEncryptorBundle</h3>
 
-<p>The <strong>UrlEncryptorBundle</strong> is easy to install, it contain a global configuration option to make the use more easier.</p>
+<p>The <strong>UrlEncryptorBundle</strong> is easy to install, it contains a global configuration option to make it easier to use.</p>
 
 <h4>1.Installation via Composer</h4>
 
