@@ -1,64 +1,60 @@
-<h1>NzoUrlEncryptorBundle</h1>
+InnoceadCaptchaBundle
+=====================
 
-<p>The <strong>UrlEncryptorBundle</strong> is a Symfony2 Bundle used to Encrypt and Decrypt the variables passed to the url and links and to provide more security in term of access to your project.</p>
+The InnoceadCaptchaBundle adds support for a captcha in Symfony 2.1.* and later.
 
-<h1>Documentation</h1>
+Features include:
 
-<h3>Getting Started With NzoUrlEncryptorBundle</h3>
+- Constraints Validator
+- Form type
+- Flexible configuration
+- Uses translations (ru, en)
 
-<p>The <strong>UrlEncryptorBundle</strong> is easy to install, it contains a global configuration option to make it easier to use.</p>
 
-<h4>1.Installation via Composer</h4>
+Installation
+------------
 
-<pre><span class="p">{</span>
-    <span class="s2">"require"</span><span class="o">:</span> <span class="p">{</span>
-        <span class="s2">"nzo/url-encryptor-bundle"</span><span class="o">:</span> <span class="s2">"dev-master"</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre>
- 
-<h4>2.Enable the bundle</h4>
-<p> Enable the bundle in the kernel:</p>
+See [Resources/doc/installation.md](https://github.com/innocead/CaptchaBundle/blob/master/Resources/doc/installation.md)
 
-<pre><span class="o">&lt;?</span><span class="nx">php</span>
-<span class="c1">// app/AppKernel.php</span>
+Usage
+-----
 
-<span class="k">public</span> <span class="k">function</span> <span class="nf">registerBundles</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="nv">$bundles</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
-        <span class="c1">// ...</span>
-        <span class="k">new</span> <span class="nx">Nzo\UrlEncryptorBundle\NzoUrlEncryptorBundle</span><span class="p">(),</span>
-    <span class="p">);</span>
-<span class="p">}</span>
-</pre>
+You can use the "innocead_captcha" type in your forms this way:
 
-<h4>3.Configure your application's config.yml</h4>
-<p>The secret option in the configuration must contain a random key string of maximum 8 caracters and minimum of one caracter.</p>
+```php
+<?php
+    // ...
+    $builder->add('captcha', 'innocead_captcha');
+    // ...
+```
 
-<pre><span class="c1"># app/config/config.yml</span>
-<span class="l-Scalar-Plain">nzo_url_encryptor</span><span class="p-Indicator">:</span>
-    <span class="l-Scalar-Plain">secret</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">YourSecretEncryptionKey</span> 
-</pre>
+And Constraints Validator in model:
 
-<h4>4.Use in Twig template</h4>
+```php
+<?php
 
-<pre>
-// use to encrypt the id in the url
+namespace ..\Model;
 
- <code>&lt;a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}" &gt;My link &lt;/a&gt;</code>
+use Innocead\CaptchaBundle\Validator\Constraints as CaptchaAssert;
 
-</pre>
+class RecoverAccount
+{
+    /**
+     * @CaptchaAssert\Captcha
+     */
+    public $captcha;
+}
+```
 
-<h4>5.Use in Controller</h4>
+Configuration
+-------------
 
-<pre>
-// use to decrypt the encrypted 'Id' comming from the routing
+See [Resources/doc/configuration.md](https://github.com/innocead/CaptchaBundle/blob/master/Resources/doc/configuration.md)
+    
 
-    public function indexAction($encrypted_id) 
-    {
-        $Id = $this->get('nzo_url_encryptor')->decrypt($encrypted_id);
+License
+-------
 
-        //....
-    }    
-</pre>
- 
+This bundle is under the MIT license. See the complete license in the bundle:
+
+See [Resources/meta/LICENSE](https://github.com/innocead/CaptchaBundle/blob/master/Resources/meta/LICENSE)
