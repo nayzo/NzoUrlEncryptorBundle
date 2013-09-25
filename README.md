@@ -8,7 +8,7 @@
 
 <p>The <strong>UrlEncryptorBundle</strong> is easy to install, it contain a global configuration option to make the use more easier.</p>
 
-<h4>Installation via Composer</h4>
+<h4>1.Installation via Composer</h4>
 
 <pre><span class="p">{</span>
     <span class="s2">"require"</span><span class="o">:</span> <span class="p">{</span>
@@ -17,7 +17,7 @@
 <span class="p">}</span>
 </pre>
  
-<h4>Enable the bundle</h4>
+<h4>2.Enable the bundle</h4>
 <p> Enable the bundle in the kernel:</p>
 
 <pre><span class="o">&lt;?</span><span class="nx">php</span>
@@ -32,24 +32,24 @@
 <span class="p">}</span>
 </pre>
 
-<h4>Configure your application's config.yml</h4>
-<p>The secure value in the configuration must contain a random key string of maximum 8 caracters and minimum of one caracter.</p>
+<h4>3.Configure your application's config.yml</h4>
+<p>The secret option in the configuration must contain a random key string of maximum 8 caracters and minimum of one caracter.</p>
 
 <pre><span class="c1"># app/config/config.yml</span>
 <span class="l-Scalar-Plain">nzo_url_encryptor</span><span class="p-Indicator">:</span>
     <span class="l-Scalar-Plain">secret</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">YourSecretEncryptionKey</span> 
 </pre>
 
-<h4>Use in Twig template</h4>
+<h4>4.Use in Twig template</h4>
 
 <pre>
 // use to encrypt the id in the url
 
-<a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> Click me </a>
+ <code>&lt; <a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> My Link </a> &gt;</code>
 
 </pre>
 
-<h4>Use in Controller</h4>
+<h4>5.Use in Controller</h4>
 
 <pre>
 // use to decrypt the encrypted 'Id' comming from the routing
@@ -61,7 +61,4 @@
         //....
     }    
 </pre>
-
-<h4>Note</h4>
-
-<p>the 
+ 
