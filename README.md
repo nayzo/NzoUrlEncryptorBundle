@@ -24,7 +24,7 @@ Add the following lines in your `composer.json` file:
 }
 ```
 
-### Register the bundle in **app/AppKernel.php**:
+### Register the bundle in app/AppKernel.php:
 
 ``` php
 // app/AppKernel.php
@@ -38,7 +38,7 @@ public function registerBundles()
 }
 ```
 
-### Configure your application's **config.yml**:
+### Configure your application's config.yml:
 
 The secret option in the configuration must contain a random key string of maximum 8 caracters and minimum of one caracter.
 
