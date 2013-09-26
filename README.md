@@ -55,7 +55,7 @@ Usage
 
 In your twig template use the filter to encrypt the variable in the url:
 
-```
+``` html
 
  <a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> My link </a>
 
