@@ -1,7 +1,8 @@
 NzoUrlEncryptorBundle
 =====================
 
-The UrlEncryptorBundle is a Symfony2 Bundle used to Encrypt and Decrypt the variables passed to the url and links and to provide more security in term of access to your project.
+The NzoUrlEncryptorBundle is a Symfony2 Bundle used to Encrypt and Decrypt the variables passed variables through url and links and to provide more security in term of access to your project.
+It prevent users from reading and modifying sensitive data sent through the url.
 
 Features include:
 
@@ -14,7 +15,7 @@ Features include:
 Installation
 ------------
 
-### Through Composer (Symfony 2.1+):
+### Through Composer:
 
 Add the following lines in your `composer.json` file:
 
@@ -56,7 +57,11 @@ In your twig template use the filter to encrypt the variable in the url:
 
 <pre>
 
- <code>&lt;a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}" &gt;My link &lt;/a&gt;</code>
+ <code>&lt;a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}" &gt; My link &lt;/a&gt;</code>
+
+// if it needed you can use the twig decryption filter:
+
+<code>&lt;a href="{{path('my-path-in-the-routing', {'id': MyId | urldecrypt } )}}" &gt; My link &lt;/a&gt;</code>
 </pre>
 
 In the controller use the decrypt service on the encrypted 'variable' comming from the routing:
