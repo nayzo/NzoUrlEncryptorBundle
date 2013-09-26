@@ -1,7 +1,7 @@
 NzoUrlEncryptorBundle
 =====================
 
-The **NzoUrlEncryptorBundle** is a Symfony2 Bundle used to Encrypt and Decrypt the variables passed variables through url and links and to provide more security in term of access to your project.
+The **NzoUrlEncryptorBundle** is a Symfony2 Bundle used to Encrypt and Decrypt data and variables passed through url and to provide more security in term of access to your project.
 It prevent users from reading and modifying sensitive data sent through the url.
 
 Features include:

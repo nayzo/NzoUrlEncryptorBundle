@@ -1,7 +1,7 @@
 {
     "name": "nzo/url-encryptor-bundle",
     "type": "symfony-bundle",
-    "description": "The NzoUrlEncryptorBundle is a Symfony2 Bundle used to Encrypt and Decrypt the variables passed variables through url and links and to provide more security in term of access to your project. It prevent users from reading and modifying sensitive data sent through the url.",
+    "description": "The NzoUrlEncryptorBundle is a Symfony2 Bundle used to Encrypt and Decrypt data and variables passed through url and to provide more security in term of access to your project. It prevent users from reading and modifying sensitive data sent through the url.",
     "keywords": ["Link", "url", "encryption", "decryption", "id", "security"],
     "homepage": "https://github.com/NAYZO/NzoUrlEncryptorBundle",
     "license": "MIT",
