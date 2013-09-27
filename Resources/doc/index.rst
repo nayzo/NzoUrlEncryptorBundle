@@ -63,13 +63,23 @@ In your twig template use the filter to encrypt the variable in the url:
 
  <a href="{{path('my-path-in-the-routing', {'id': MyId | urldecrypt } )}}"> My link </a>
 ``` 
+In the your routing.yml:
+
+``` yml
+# routing.yml
+
+my-path-in-the-routing:    
+    pattern: /my-url/{id}
+    defaults: {_controller: MyBundle:MyController:MyFunction}
+
+```
 
 In the controller use the decrypt service on the encrypted 'variable' comming from the routing:
 
 ```php
-     public function indexAction($encrypted_id) 
+     public function indexAction($id) 
     {
-        $Id = $this->get('nzo_url_encryptor')->decrypt($encrypted_id);
+        $MyId = $this->get('nzo_url_encryptor')->decrypt($id);
 
         //....
     }    
