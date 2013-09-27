@@ -82,6 +82,19 @@ In the controller use the decrypt service on the encrypted 'id' comming from the
         $MyId = $this->get('nzo_url_encryptor')->decrypt($id);
 
         //....
+
+    }    
+```
+
+If it needed you can use the encryption service to encrypt your data:
+
+```php
+     public function indexAction() 
+    {   
+        $Encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
+
+        //....
+
     }    
 ```
 
