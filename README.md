@@ -6,8 +6,8 @@ It prevent users from reading and modifying sensitive data sent through the url.
 
 Features include:
 
-- Url Variables Encryption
-- Url Variables Decryption
+- Url Data & parameters Encryption
+- Url Data & parameters Decryption
 - Access from Twig by ease
 - Flexible configuration
 
