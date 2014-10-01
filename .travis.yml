@@ -1,24 +1,22 @@
 language: php
 
-php: 5.3.3
+php:
+  - 5.3
+  - 5.4
+  - 5.5
+  - hhvm
 
-env:
-    - SYMFONY_VERSION="2.1.*"
-    - SYMFONY_VERSION="2.2.*"
-    - SYMFONY_VERSION="2.3.*"
-    - SYMFONY_VERSION="2.4.*"
-    - SYMFONY_VERSION="2.5.*"
+matrix:
+  allow_failures:
+    - php: hhvm
+
 
 before_script:
-    - composer require --no-update symfony/framework-bundle:${SYMFONY_VERSION}
-    - composer install --prefer-source
+  - composer selfupdate
+  - composer --prefer-source install
 
-script: bin/phpunit --coverage-clover clover.xml
-
-after_script: bin/coveralls
-
-branches:
-    only: master
+script: phpunit --debug
 
 notifications:
-    email: alakhefifi@gmail.com
+  email:
+    - alakhefifi@gmail.com
