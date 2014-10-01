@@ -10,7 +10,7 @@ before_script:
   - composer selfupdate
   - composer --prefer-source install
 
-script: phpunit --debug
+#script: phpunit --debug
 
 notifications:
   email:
