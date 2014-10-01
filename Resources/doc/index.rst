@@ -1,6 +1,8 @@
 NzoUrlEncryptorBundle
 =====================
 
+[![Build Status](https://travis-ci.org/NAYZO/NzoUrlEncryptorBundle.svg?branch=master)](https://travis-ci.org/NAYZO/NzoUrlEncryptorBundle)
+
 The **NzoUrlEncryptorBundle** is a Symfony2 Bundle used to Encrypt and Decrypt data and variables passed through url and to provide more security in term of access to your project.
 It prevent users from reading and modifying sensitive data sent through the url.
 
@@ -23,6 +25,11 @@ Add the following lines in your `composer.json` file:
 "require": {
     "nzo/url-encryptor-bundle": "dev-master"
 }
+```
+Install the bundle:
+
+```
+$ composer update
 ```
 
 ### Register the bundle in app/AppKernel.php:
