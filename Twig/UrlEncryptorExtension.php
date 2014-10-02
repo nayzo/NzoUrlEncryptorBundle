@@ -9,11 +9,13 @@ namespace Nzo\UrlEncryptorBundle\Twig;
  */
 class UrlEncryptorExtension extends \Twig_Extension
 {
-     private $urlencryptor;
-     public function __construct(\Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor $urlencryptor) {
+    private $urlencryptor;
+
+    public function __construct(\Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor $urlencryptor)
+    {
         $this->urlencryptor = $urlencryptor;
     }
-    
+
     public function getFilters()
     {
         return array(
@@ -26,7 +28,7 @@ class UrlEncryptorExtension extends \Twig_Extension
     {
         return $this->urlencryptor->encrypt($key);
     }
-    
+
     public function urldecryptFilter($key)
     {
         return $this->urlencryptor->decrypt($key);
@@ -34,6 +36,6 @@ class UrlEncryptorExtension extends \Twig_Extension
 
     public function getName()
     {
-        return 'nzo_urlencryptor_extension'; 
+        return 'nzo_urlencryptor_extension';
     }
 }

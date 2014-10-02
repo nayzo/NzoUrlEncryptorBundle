@@ -21,17 +21,16 @@ class NzoUrlEncryptorExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
-        
+
         $secret = $config['secret'];
         if (!isset($config['secret'])) {
             throw new \InvalidArgumentException('The "secret" option must be set');
-        }
-        else if (strlen($secret) > 8) {
+        } else if (strlen($secret) > 8) {
             $secret = substr($secret, 0, 8);
         }
 
         $container->setParameter('nzo_url_encryptor.secret_key', $secret);
-        }
+    }
 }
