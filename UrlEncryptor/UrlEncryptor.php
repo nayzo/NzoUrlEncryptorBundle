@@ -3,11 +3,13 @@
 namespace Nzo\UrlEncryptorBundle\UrlEncryptor;
 
 /**
- * UrlEncryptor.
+ * Class UrlEncryptor
+ * @package Nzo\UrlEncryptorBundle\UrlEncryptor
  *
  * @author Ala Eddine Khefifi <alakhefifi@gmail.com>
  * Website   www.alakhefifi.com
  */
+
 class UrlEncryptor 
 {
     private $secret;
