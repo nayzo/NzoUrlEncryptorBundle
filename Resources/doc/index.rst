@@ -69,13 +69,27 @@ In your twig template use the filter to encrypt the variable in the url:
  # if it needed you can use the twig decryption filter:
 
  <a href="{{path('my-path-in-the-routing', {'id': MyId | urldecrypt } )}}"> My link </a>
-``` 
+
+```
+
+Also you can ``encrypt`` and ``decrypt`` variables and data using the ``Twig filter``:
+
+``` html
+// Encrypt data:
+
+        {{MyVar | urlencrypt }}
+
+ // Decrypt data:
+
+         {{MyVar | urldecrypt }}
+```
+
 In the routing.yml:
 
 ``` yml
 # routing.yml
 
-my-path-in-the-routing:    
+my-path-in-the-routing:
     pattern: /my-url/{id}
     defaults: {_controller: MyBundle:MyController:MyFunction}
 
@@ -90,7 +104,7 @@ In the controller use the decrypt service on the encrypted 'id' comming from the
 
         //....
 
-    }    
+    }
 ```
 
 If it needed you can use the encryption service to encrypt your data:
@@ -102,7 +116,7 @@ If it needed you can use the encryption service to encrypt your data:
 
         //....
 
-    }    
+    }
 ```
 
 License
