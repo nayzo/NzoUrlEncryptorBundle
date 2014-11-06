@@ -37,6 +37,7 @@ class UrlEncryptor
             return false;
 
         $secret = substr($secret, 1, strlen($secret) - 1);
+
         return $secret;
     }
 
@@ -49,6 +50,7 @@ class UrlEncryptor
         mcrypt_generic_init($td, $key, $iv);
         $secret = $this->base64url_encode(mcrypt_generic($td, '!' . $secret));
         mcrypt_generic_deinit($td);
+
         return $secret;
     }
 

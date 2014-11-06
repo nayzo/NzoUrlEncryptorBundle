@@ -1,5 +1,6 @@
 parameters:     
     nzo_url_encryptor.class:    Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor
+    encryptor_extension.class:    Nzo\UrlEncryptorBundle\Twig\UrlEncryptorExtension
 
 services:
     nzo_url_encryptor:
@@ -7,7 +8,7 @@ services:
         arguments: [%nzo_url_encryptor.secret_key%]
 
     nzo.twig.url_encryptor_extension:
-        class: Nzo\UrlEncryptorBundle\Twig\UrlEncryptorExtension
+        class: "%encryptor_extension.class%"
         arguments: ["@nzo_url_encryptor"]
         tags:
           - { name: twig.extension }
