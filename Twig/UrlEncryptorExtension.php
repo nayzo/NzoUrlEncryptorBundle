@@ -11,6 +11,8 @@
 
 namespace Nzo\UrlEncryptorBundle\Twig;
 
+use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
+
 /**
  * Class UrlEncryptorExtension
  * @package Nzo\UrlEncryptorBundle\Twig
@@ -19,7 +21,7 @@ class UrlEncryptorExtension extends \Twig_Extension
 {
     private $urlencryptor;
 
-    public function __construct(\Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor $urlencryptor)
+    public function __construct(UrlEncryptor $urlencryptor)
     {
         $this->urlencryptor = $urlencryptor;
     }
