@@ -3,8 +3,9 @@ NzoUrlEncryptorBundle
 
 [![Build Status](https://travis-ci.org/NAYZO/NzoUrlEncryptorBundle.svg?branch=master)](https://travis-ci.org/NAYZO/NzoUrlEncryptorBundle)
 
-The **NzoUrlEncryptorBundle** is a Symfony2 Bundle used to Encrypt and Decrypt data and variables passed through url and to provide more security in term of access to your project.
-It prevent users from reading and modifying sensitive data sent through the url.
+The **NzoUrlEncryptorBundle** is a Symfony2 Bundle used to Encrypt and Decrypt data and variables in the Web application or passed through the ``URL`` to provide more security to the project.
+Also it prevent users from reading and modifying sensitive data sent through the ``URL``.
+
 
 Features include:
 
@@ -90,12 +91,12 @@ In the routing.yml:
 # routing.yml
 
 my-path-in-the-routing:
-    pattern: /my-url/{id}
+    path: /my-url/{id}
     defaults: {_controller: MyBundle:MyController:MyFunction}
 
 ```
 
-In the controller use the decrypt service on the encrypted 'id' comming from the routing:
+In the controller use the ``decrypt`` function of the service on the encrypted ``id``:
 
 ```php
      public function indexAction($id) 
@@ -107,11 +108,13 @@ In the controller use the decrypt service on the encrypted 'id' comming from the
     }
 ```
 
-If it needed you can use the encryption service to encrypt your data:
+You can also use the ``encrypt`` function of the service to encrypt your data:
 
 ```php
      public function indexAction() 
     {   
+        //....
+        
         $Encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
 
         //....
