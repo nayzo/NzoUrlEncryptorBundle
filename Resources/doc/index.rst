@@ -24,7 +24,7 @@ Add the following lines in your `composer.json` file:
 
 ``` js
 "require": {
-    "nzo/url-encryptor-bundle": "dev-master"
+    "nzo/url-encryptor-bundle": "~1.0"
 }
 ```
 Install the bundle:
