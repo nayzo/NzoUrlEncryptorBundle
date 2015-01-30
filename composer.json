@@ -17,5 +17,10 @@
     "autoload": {
         "psr-0": { "Nzo\\UrlEncryptorBundle": "" }
     },
-    "target-dir": "Nzo/UrlEncryptorBundle"
+    "target-dir": "Nzo/UrlEncryptorBundle",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    }
 }
