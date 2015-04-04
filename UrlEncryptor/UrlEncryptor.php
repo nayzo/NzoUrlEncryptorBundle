@@ -18,40 +18,28 @@ namespace Nzo\UrlEncryptorBundle\UrlEncryptor;
 class UrlEncryptor
 {
     private $secret;
+    private $iv;
 
     public function __construct($secret)
     {
         $this->secret = $secret;
+        $mod = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, '');
+        $this->iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($mod), MCRYPT_RAND);
     }
 
-    public function decrypt($secret)
+    public function encrypt($plainText)
     {
-        $key = $this->secret;
-        $td = mcrypt_module_open(MCRYPT_DES, "", MCRYPT_MODE_ECB, "");
-        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-        mcrypt_generic_init($td, $key, $iv);
-        $secret = mdecrypt_generic($td, $this->base64url_decode($secret));
-        mcrypt_generic_deinit($td);
+        $encrypted = mcrypt_encrypt(MCRYPT_3DES, $this->secret, $plainText, MCRYPT_MODE_ECB, $this->iv);
 
-        if (substr($secret, 0, 1) != '!')
-            return false;
-
-        $secret = substr($secret, 1, strlen($secret) - 1);
-
-        return $secret;
+        return $this->base64url_encode($encrypted);
     }
 
-
-    public function encrypt($secret)
+    public function decrypt($encrypted)
     {
-        $key = $this->secret;
-        $td = mcrypt_module_open(MCRYPT_DES, "", MCRYPT_MODE_ECB, "");
-        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-        mcrypt_generic_init($td, $key, $iv);
-        $secret = $this->base64url_encode(mcrypt_generic($td, '!' . $secret));
-        mcrypt_generic_deinit($td);
 
-        return $secret;
+        $decrypted = mcrypt_decrypt(MCRYPT_3DES, $this->secret, $this->base64url_decode($encrypted), MCRYPT_MODE_ECB, $this->iv);
+
+        return trim($decrypted);
     }
 
     function base64url_encode($data)
