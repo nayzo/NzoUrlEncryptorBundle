@@ -34,8 +34,8 @@ class NzoUrlEncryptorExtension extends Extension
         $secret = $config['secret'];
         if (!isset($config['secret'])) {
             throw new \InvalidArgumentException('The "secret" option must be set');
-        } else if (strlen($secret) > 8) {
-            $secret = substr($secret, 0, 8);
+        } else if (strlen($secret) > 24) {
+            $secret = substr($secret, 0, 24);
         }
 
         $container->setParameter('nzo_url_encryptor.secret_key', $secret);
