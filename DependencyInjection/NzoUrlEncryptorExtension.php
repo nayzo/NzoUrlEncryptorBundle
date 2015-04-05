@@ -32,11 +32,13 @@ class NzoUrlEncryptorExtension extends Extension
         $loader->load('services.yml');
 
         $secret = $config['secret'];
-        if (!isset($config['secret'])) {
-            throw new \InvalidArgumentException('The "secret" option must be set');
-        } else if (strlen($secret) > 24) {
+
+        if (strlen($secret) < 24) {
+            $secret = str_pad($secret, 24, "\0", STR_PAD_RIGHT);
+        } else {
             $secret = substr($secret, 0, 24);
         }
+
 
         $container->setParameter('nzo_url_encryptor.secret_key', $secret);
     }
