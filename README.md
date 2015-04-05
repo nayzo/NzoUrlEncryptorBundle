@@ -49,7 +49,7 @@ public function registerBundles()
 
 ### Configure your application's config.yml:
 
-The secret option in the configuration must contain a random key string of maximum 8 caracters and minimum of one caracter.
+Configure your secret encryption key:
 
 ``` yml
 # app/config/config.yml
