@@ -16,7 +16,7 @@ use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
 class NzoUrlEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
 {
     const SECRET = 'secret_text';
-    const KEY = 'encryptionKey';
+    const KEY = 'encryptionKeyWith24Chars';
     private $urlEncryptor;
 
     public function setup()
