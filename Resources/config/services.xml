@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+ * This file is part of the UrlEncryptorBundle package.
+ *
+ * (c) Ala Eddine Khefifi <alakhefifi@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+-->
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="nzo_url_encryptor.class">Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor</parameter>
+        <parameter key="encryptor_extension.class">Nzo\UrlEncryptorBundle\Twig\UrlEncryptorExtension</parameter>
+    </parameters>
+
+    <services>
+        <service id="nzo_url_encryptor" class="%nzo_url_encryptor.class%">
+            <argument>%nzo_url_encryptor.secret_key%</argument>
+        </service>
+
+        <service id="nzo.twig.url_encryptor_extension" class="%encryptor_extension.class%">
+            <argument type="service" id="nzo_url_encryptor"/>
+            <tag name="twig.extension"/>
+        </service>
+
+    </services>
+</container>
