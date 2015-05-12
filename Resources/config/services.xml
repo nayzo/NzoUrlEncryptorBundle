@@ -16,6 +16,7 @@
     <parameters>
         <parameter key="nzo_url_encryptor.class">Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor</parameter>
         <parameter key="encryptor_extension.class">Nzo\UrlEncryptorBundle\Twig\UrlEncryptorExtension</parameter>
+        <parameter key="encryptor_annotation_resolver.class">Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver</parameter>
     </parameters>
 
     <services>
@@ -26,6 +27,12 @@
         <service id="nzo.twig.url_encryptor_extension" class="%encryptor_extension.class%">
             <argument type="service" id="nzo_url_encryptor"/>
             <tag name="twig.extension"/>
+        </service>
+
+        <service id="nzo.annotation_resolver" class="%encryptor_annotation_resolver.class%">
+            <argument type="service" id="annotations.reader"/>
+            <argument type="service" id="nzo_url_encryptor"/>
+            <tag name="kernel.event_listener" event="kernel.controller" method="onKernelController"/>
         </service>
 
     </services>

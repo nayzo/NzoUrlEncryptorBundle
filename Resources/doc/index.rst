@@ -108,6 +108,23 @@ In the controller use the ``decrypt`` function of the service on the encrypted `
     }
 ```
 
+Or you can use the annotation service in your controller to ``decrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` annotation service and specifying in it all the parameters to be decrypted:
+
+```php
+use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
+//...
+
+    /**
+     * @ParamDecryptor(params="id, toto, bar")
+     */
+     public function indexAction($id, $toto) 
+    {
+        // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
+        //....
+
+    }
+```
+
 You can also use the ``encrypt`` function of the service to encrypt your data:
 
 ```php
