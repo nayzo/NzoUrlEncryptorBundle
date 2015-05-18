@@ -11,6 +11,7 @@ Features include:
 
 - Url Data & parameters Encryption
 - Url Data & parameters Decryption
+- Data Encryption & Decryption
 - Access from Twig by ease
 - Flexible configuration
 
@@ -55,13 +56,15 @@ Configure your secret encryption key:
 # app/config/config.yml
 
 nzo_url_encryptor:
-    secret: YourSecretEncryptionKey 
+    secret: YourSecretEncryptionKey      # max length of 24 characters
 ```
 
 Usage
 -----
 
-In your twig template use the filter to encrypt the variable in the url:
+#### In the twig template:
+ 
+Use the filter to encrypt the variable in the url:
 
 ``` html
 
@@ -85,7 +88,7 @@ Also you can ``encrypt`` and ``decrypt`` variables and data using the ``Twig fil
          {{MyVar | urldecrypt }}
 ```
 
-In the routing.yml:
+#### In the routing.yml:
 
 ``` yml
 # routing.yml
@@ -96,19 +99,9 @@ my-path-in-the-routing:
 
 ```
 
-In the controller use the ``decrypt`` function of the service on the encrypted ``id``:
+#### In the controller with annotation service:
 
-```php
-     public function indexAction($id) 
-    {
-        $MyId = $this->get('nzo_url_encryptor')->decrypt($id);
-
-        //....
-
-    }
-```
-
-Or you can use the annotation service in your controller to ``decrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` annotation service and specifying in it all the parameters to be decrypted:
+Use the annotation service to ``decrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` annotation service and specifying in it all the parameters to be decrypted:
 
 ```php
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
@@ -117,9 +110,23 @@ use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
     /**
      * @ParamDecryptor(params="id, toto, bar")
      */
-     public function indexAction($id, $toto) 
+     public function indexAction(User $id, $toto) 
     {
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
+        //....
+
+    }
+```
+
+#### In the controller without annotation service:
+
+Use the ``decrypt`` function of the service to decrypt your data:
+
+```php
+     public function indexAction($id) 
+    {
+        $MyId = $this->get('nzo_url_encryptor')->decrypt($id);
+
         //....
 
     }
