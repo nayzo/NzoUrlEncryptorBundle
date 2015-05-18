@@ -64,7 +64,7 @@ Usage
 
 #### In the twig template:
  
-Use the filter to encrypt the variable in the url:
+Use the filter to ``encrypt`` or ``decrypt`` variables passed in the url:
 
 ``` html
 
@@ -76,16 +76,16 @@ Use the filter to encrypt the variable in the url:
 
 ```
 
-Also you can ``encrypt`` and ``decrypt`` variables and data using the ``Twig filter``:
+Also you can ``encrypt`` and ``decrypt`` any data using the ``Twig filter``:
 
 ``` html
-// Encrypt data:
+# Encrypt data:
 
-        {{MyVar | urlencrypt }}
+    {{MyVar | urlencrypt }}
 
- // Decrypt data:
+# Decrypt data:
 
-         {{MyVar | urldecrypt }}
+    {{MyVar | urldecrypt }}
 ```
 
 #### In the routing.yml:
