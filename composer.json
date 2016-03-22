@@ -13,7 +13,7 @@
     "require": {
         "php": ">=5.3.3",
         "ext-mcrypt": "*",
-        "symfony/framework-bundle": "~2.1"
+        "symfony/framework-bundle": "~2.3|~3.0"
     },
     "autoload": {
         "psr-0": { "Nzo\\UrlEncryptorBundle": "" }
