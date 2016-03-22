@@ -12,6 +12,7 @@
     ],
     "require": {
         "php": ">=5.3.3",
+        "ext-mcrypt": "*",
         "symfony/framework-bundle": "~2.1"
     },
     "autoload": {
