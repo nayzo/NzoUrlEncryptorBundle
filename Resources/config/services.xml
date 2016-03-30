@@ -16,7 +16,8 @@
     <parameters>
         <parameter key="nzo_url_encryptor.class">Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor</parameter>
         <parameter key="encryptor_extension.class">Nzo\UrlEncryptorBundle\Twig\UrlEncryptorExtension</parameter>
-        <parameter key="encryptor_annotation_resolver.class">Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver</parameter>
+        <parameter key="encryptor_annotation_resolver.class">Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver
+        </parameter>
     </parameters>
 
     <services>
