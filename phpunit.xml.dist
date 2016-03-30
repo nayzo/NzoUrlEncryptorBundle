@@ -2,19 +2,19 @@
 
 <phpunit bootstrap="./Tests/bootstrap.php" colors="true">
 
-<testsuites>
-    <testsuite name="Nzo Url Encryptor Bundle Test Suite">
-        <directory>./Tests</directory>
-    </testsuite>
-</testsuites>
-
-<filter>
-    <whitelist>
-        <directory>./</directory>
-        <exclude>
+    <testsuites>
+        <testsuite name="Nzo Url Encryptor Bundle Test Suite">
             <directory>./Tests</directory>
-            <directory>./vendor</directory>
-        </exclude>
-    </whitelist>
-</filter>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist>
+            <directory>./</directory>
+            <exclude>
+                <directory>./Tests</directory>
+                <directory>./vendor</directory>
+            </exclude>
+        </whitelist>
+    </filter>
 </phpunit>

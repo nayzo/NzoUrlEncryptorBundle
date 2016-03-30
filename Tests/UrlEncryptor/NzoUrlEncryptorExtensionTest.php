@@ -31,5 +31,4 @@ class NzoUrlEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($decrypted, self::SECRET);
     }
-
 }
