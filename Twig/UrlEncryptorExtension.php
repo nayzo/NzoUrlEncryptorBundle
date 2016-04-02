@@ -29,8 +29,8 @@ class UrlEncryptorExtension extends \Twig_Extension
     public function getFilters()
     {
         return array(
-            new \Twig_SimpleFunction('urlencrypt', array($this, 'urlencryptFilter')),
-            new \Twig_SimpleFunction('urldecrypt', array($this, 'urldecryptFilter')),
+            new \Twig_SimpleFilter('urlencrypt', array($this, 'urlencryptFilter')),
+            new \Twig_SimpleFilter('urldecrypt', array($this, 'urldecryptFilter')),
         );
     }
 
