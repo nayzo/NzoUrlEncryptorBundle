@@ -27,7 +27,7 @@ Add the following lines in your `composer.json` file:
 
 ``` js
 "require": {
-    "nzo/url-encryptor-bundle": "~1.0"
+    "nzo/url-encryptor-bundle": "~2.0"
 }
 ```
 Install the bundle:
@@ -66,17 +66,31 @@ Usage
 
 #### In the twig template:
  
-Use the filter to ``encrypt`` or ``decrypt`` variables passed in the url:
+Use the twig extensions filters or functions to ``encrypt`` or ``decrypt`` your data:
 
 ``` html
+// Filters:
 
- <a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> My link </a>
+# Encryption:
 
- # if it needed you can use the twig decryption filter:
+    <a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> My link </a>
 
- <a href="{{path('my-path-in-the-routing', {'id': MyId | urldecrypt } )}}"> My link </a>
+# Decryption:
 
+    <a href="{{path('my-path-in-the-routing', {'id': MyId | urldecrypt } )}}"> My link </a>
+
+
+// Functions:
+
+# Encryption:
+
+    <a href="{{path('my-path-in-the-routing', {'id': nzoEncrypt('MyID') } )}}"> My link </a>
+
+# Decryption:
+
+    <a href="{{path('my-path-in-the-routing', {'id': nzoDecrypt('MyID') } )}}"> My link </a>
 ```
+
 
 Also you can ``encrypt`` and ``decrypt`` any data using the ``Twig filter``:
 
@@ -85,9 +99,13 @@ Also you can ``encrypt`` and ``decrypt`` any data using the ``Twig filter``:
 
     {{MyVar | urlencrypt }}
 
+    {{ nzoEncrypt(MyVar) }}
+
 # Decrypt data:
 
     {{MyVar | urldecrypt }}
+
+    {{ nzoDecrypt(MyVar) }}
 ```
 
 #### In the routing.yml:
@@ -103,16 +121,18 @@ my-path-in-the-routing:
 
 #### In the controller with annotation service:
 
-Use the annotation service to ``decrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` annotation service and specifying in it all the parameters to be decrypted:
+Use the annotation service to ``decrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` annotation service and specifying in it all the parameters to be decrypted.
+
+Be aware that if you pass a default value to your param, the default value will be used in this case.
 
 ```php
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
 //...
 
     /**
-     * @ParamDecryptor(params="id, toto, bar")
+     * @ParamDecryptor(params={"id", "bar": 5, "foo":"some value"})
      */
-     public function indexAction(User $id, $toto) 
+     public function indexAction($id, $bar = 5)
     {
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
         //....
@@ -144,7 +164,6 @@ You can also use the ``encrypt`` function of the service to encrypt your data:
         $Encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
 
         //....
-
     }
 ```
 

@@ -34,12 +34,30 @@ class UrlEncryptorExtension extends \Twig_Extension
         );
     }
 
+    public function getFunctions()
+    {
+        return array(
+            new \Twig_SimpleFunction('nzoEncrypt', array($this, 'nzoEncryptFunction')),
+            new \Twig_SimpleFunction('nzoDecrypt', array($this, 'nzoDecryptFunction')),
+        );
+    }
+
     public function urlencryptFilter($key)
     {
         return $this->urlencryptor->encrypt($key);
     }
 
     public function urldecryptFilter($key)
+    {
+        return $this->urlencryptor->decrypt($key);
+    }
+
+    public function nzoEncryptFunction($key)
+    {
+        return $this->urlencryptor->encrypt($key);
+    }
+
+    public function nzoDecryptFunction($key)
     {
         return $this->urlencryptor->decrypt($key);
     }
