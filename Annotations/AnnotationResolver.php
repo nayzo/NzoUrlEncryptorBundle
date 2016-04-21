@@ -28,14 +28,21 @@ class AnnotationResolver
         foreach ($this->reader->getMethodAnnotations($method) as $configuration) {
             if (isset($configuration->params)) {
                 $request = $event->getRequest();
-                $params = explode(',', str_replace(' ', '', $configuration->params));
-                foreach ($params as $param) {
-                    if ($request->attributes->has($param)) {
-                        $decrypted = $this->decryptor->decrypt($request->attributes->get($param));
-                        $request->attributes->set($param, $decrypted);
-                    } elseif ($request->request->has($param)) {
-                        $decrypted = $this->decryptor->decrypt($request->request->get($param));
-                        $request->request->set($param, $decrypted);
+                foreach ($configuration->params as $key => $param) {
+                    if (is_int($key)) {
+                        if ($request->attributes->has($param)) {
+                            $decrypted = $this->decryptor->decrypt($request->attributes->get($param));
+                            $request->attributes->set($param, $decrypted);
+                        } elseif ($request->request->has($param)) {
+                            $decrypted = $this->decryptor->decrypt($request->request->get($param));
+                            $request->request->set($param, $decrypted);
+                        }
+                    } else {
+                        if ($request->attributes->has($key)) {
+                            $request->attributes->set($key, $param);
+                        } elseif ($request->request->has($key)) {
+                            $request->request->set($key, $param);
+                        }
                     }
                 }
             }
