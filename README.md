@@ -75,9 +75,13 @@ Use the twig extensions filters or functions to ``encrypt`` or ``decrypt`` your 
 
     <a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> My link </a>
 
+    {{MyVar | urlencrypt }}
+
 # Decryption:
 
     <a href="{{path('my-path-in-the-routing', {'id': MyId | urldecrypt } )}}"> My link </a>
+
+    {{MyVar | urldecrypt }}
 
 
 // Functions:
@@ -86,24 +90,11 @@ Use the twig extensions filters or functions to ``encrypt`` or ``decrypt`` your 
 
     <a href="{{path('my-path-in-the-routing', {'id': nzoEncrypt('MyID') } )}}"> My link </a>
 
+    {{ nzoEncrypt(MyVar) }}
+
 # Decryption:
 
     <a href="{{path('my-path-in-the-routing', {'id': nzoDecrypt('MyID') } )}}"> My link </a>
-```
-
-
-Also you can ``encrypt`` and ``decrypt`` any data using the ``Twig filter``:
-
-``` html
-# Encrypt data:
-
-    {{MyVar | urlencrypt }}
-
-    {{ nzoEncrypt(MyVar) }}
-
-# Decrypt data:
-
-    {{MyVar | urldecrypt }}
 
     {{ nzoDecrypt(MyVar) }}
 ```
@@ -116,7 +107,6 @@ Also you can ``encrypt`` and ``decrypt`` any data using the ``Twig filter``:
 my-path-in-the-routing:
     path: /my-url/{id}
     defaults: {_controller: MyBundle:MyController:MyFunction}
-
 ```
 
 #### In the controller with annotation service:
@@ -135,8 +125,7 @@ use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
      public function indexAction($id, $bar = 5)
     {
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
-        //....
-
+        //...
     }
 ```
 
@@ -149,8 +138,7 @@ Use the ``decrypt`` function of the service to decrypt your data:
     {
         $MyId = $this->get('nzo_url_encryptor')->decrypt($id);
 
-        //....
-
+        //...
     }
 ```
 
@@ -159,11 +147,10 @@ You can also use the ``encrypt`` function of the service to encrypt your data:
 ```php
      public function indexAction() 
     {   
-        //....
+        //...
         
         $Encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
-
-        //....
+        //...
     }
 ```
 
