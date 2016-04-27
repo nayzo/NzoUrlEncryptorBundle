@@ -5,7 +5,7 @@ NzoUrlEncryptorBundle
 [![Total Downloads](https://poser.pugx.org/nzo/url-encryptor-bundle/downloads)](https://packagist.org/packages/nzo/url-encryptor-bundle)
 [![Latest Stable Version](https://poser.pugx.org/nzo/url-encryptor-bundle/v/stable)](https://packagist.org/packages/nzo/url-encryptor-bundle)
 
-The **NzoUrlEncryptorBundle** is a Symfony2 Bundle used to Encrypt and Decrypt data and variables in the Web application or passed through the ``URL`` to provide more security to the project.
+The **NzoUrlEncryptorBundle** is a Symfony2/3 Bundle used to Encrypt and Decrypt data and variables in the Web application or passed through the ``URL`` to provide more security to the project.
 Also it prevent users from reading and modifying sensitive data sent through the ``URL``.
 
 
