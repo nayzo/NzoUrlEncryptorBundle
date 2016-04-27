@@ -1,7 +1,7 @@
 {
     "name": "nzo/url-encryptor-bundle",
     "type": "symfony-bundle",
-    "description": "The NzoUrlEncryptorBundle is a Symfony2 Bundle used to Encrypt and Decrypt data and variables in the Web application or passed through URL",
+    "description": "The NzoUrlEncryptorBundle is a Symfony2/3 Bundle used to Encrypt and Decrypt data and variables in the Web application or passed through URL",
     "keywords": ["Link", "url", "encryption", "decryption", "encrypt", "decrypt", "id", "data", "variable", "security"],
     "license": "MIT",
     "authors": [
