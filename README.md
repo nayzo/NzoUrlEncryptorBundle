@@ -27,7 +27,7 @@ Add the following lines in your `composer.json` file:
 
 ``` js
 "require": {
-    "nzo/url-encryptor-bundle": "~2.0"
+    "nzo/url-encryptor-bundle": "~3.0"
 }
 ```
 Install the bundle:
@@ -113,16 +113,14 @@ my-path-in-the-routing:
 
 Use the annotation service to ``decrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` annotation service and specifying in it all the parameters to be decrypted.
 
-Be aware that if you pass a default value to your param, the default value will be used in this case.
-
 ```php
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
 //...
 
     /**
-     * @ParamDecryptor(params={"id", "bar": 5, "foo":"some value"})
+     * @ParamDecryptor(params={"id", "bar"})
      */
-     public function indexAction($id, $bar = 5)
+     public function indexAction($id, $bar)
     {
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
         //...
