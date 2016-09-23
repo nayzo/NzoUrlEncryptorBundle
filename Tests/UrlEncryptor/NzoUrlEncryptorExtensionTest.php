@@ -17,6 +17,10 @@ class NzoUrlEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
 {
     const SECRET = 'secret_text';
     const KEY = 'encryptionKeyWith24Chars';
+
+    /**
+     * @var UrlEncryptor
+     */
     private $urlEncryptor;
 
     public function setup()
