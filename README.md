@@ -23,17 +23,10 @@ Installation
 
 ### Through Composer:
 
-Add the following lines in your `composer.json` file:
-
-``` js
-"require": {
-    "nzo/url-encryptor-bundle": "~3.0"
-}
-```
 Install the bundle:
 
 ```
-$ composer update
+$ composer require nzo/url-encryptor-bundle
 ```
 
 ### Register the bundle in app/AppKernel.php:

@@ -19,6 +19,9 @@ use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
  */
 class UrlEncryptorExtension extends \Twig_Extension
 {
+    /**
+     * @var UrlEncryptor
+     */
     private $urlencryptor;
 
     public function __construct(UrlEncryptor $urlencryptor)
@@ -42,21 +45,37 @@ class UrlEncryptorExtension extends \Twig_Extension
         );
     }
 
+    /**
+     * @param string $key
+     * @return string
+     */
     public function urlencryptFilter($key)
     {
         return $this->urlencryptor->encrypt($key);
     }
 
+    /**
+     * @param string $key
+     * @return string
+     */
     public function urldecryptFilter($key)
     {
         return $this->urlencryptor->decrypt($key);
     }
 
+    /**
+     * @param string $key
+     * @return string
+     */
     public function nzoEncryptFunction($key)
     {
         return $this->urlencryptor->encrypt($key);
     }
 
+    /**
+     * @param string $key
+     * @return string
+     */
     public function nzoDecryptFunction($key)
     {
         return $this->urlencryptor->decrypt($key);

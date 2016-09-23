@@ -19,7 +19,7 @@
         "symfony/framework-bundle": "~2.3|~3.0"
     },
     "autoload": {
-        "psr-0": { "Nzo\\UrlEncryptorBundle": "" }
+        "psr-4": { "Nzo\\UrlEncryptorBundle\\": "" }
     },
     "target-dir": "Nzo/UrlEncryptorBundle",
     "extra": {
