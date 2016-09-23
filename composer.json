@@ -18,8 +18,12 @@
         "ext-mcrypt": "*",
         "symfony/framework-bundle": "~2.3|~3.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8|^5.5"
+    },
     "autoload": {
-        "psr-0": { "Nzo\\UrlEncryptorBundle": "" }
+        "psr-4": { "Nzo\\UrlEncryptorBundle\\": "" },
+        "exclude-from-classmap": ["/Tests/"]
     },
     "target-dir": "Nzo/UrlEncryptorBundle",
     "extra": {
