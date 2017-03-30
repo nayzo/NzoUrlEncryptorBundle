@@ -16,6 +16,8 @@ Features include:
 - Data Encryption & Decryption
 - Access from Twig by ease
 - Flexible configuration
+- Compatible php 7.1
+- Uses OpenSSL extension
 
 
 Installation
@@ -51,7 +53,9 @@ Configure your secret encryption key:
 # app/config/config.yml
 
 nzo_url_encryptor:
-    secret: YourSecretEncryptionKey      # max length of 24 characters
+    secret_key: YourSecretEncryptionKey    # optional, max length of 100 characters.
+    secret_iv:  YourIvEncryptionKey        # optional, max length of 100 characters.
+    cipher_algorithm:                      # optional, default: 'aes-256-ctr'
 ```
 
 Usage
@@ -66,13 +70,13 @@ Use the twig extensions filters or functions to ``encrypt`` or ``decrypt`` your 
 
 # Encryption:
 
-    <a href="{{path('my-path-in-the-routing', {'id': MyId | urlencrypt } )}}"> My link </a>
+    <a href="{{path('my-route', {'id': MyId | urlencrypt } )}}"> My link </a>
 
     {{MyVar | urlencrypt }}
 
 # Decryption:
 
-    <a href="{{path('my-path-in-the-routing', {'id': MyId | urldecrypt } )}}"> My link </a>
+    <a href="{{path('my-route', {'id': MyId | urldecrypt } )}}"> My link </a>
 
     {{MyVar | urldecrypt }}
 

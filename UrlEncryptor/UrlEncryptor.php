@@ -17,14 +17,43 @@ namespace Nzo\UrlEncryptorBundle\UrlEncryptor;
  */
 class UrlEncryptor
 {
-    private $secret;
+    const CIPHER_ALGORITHM = 'aes-256-ctr';
+    const HASH_ALGORITHM = 'sha256';
+
+    /**
+     * @var string
+     */
+    private $secretKey;
+
+    /**
+     * @var string
+     */
     private $iv;
 
-    public function __construct($secret)
+    /**
+     * @var string
+     */
+    private $cipherAlgorithm;
+
+    /**
+     * UrlEncryptor constructor.
+     *
+     * @param string $secretKey
+     * @param string $secretIv
+     * @param string $cipherAlgorithm
+     *
+     * @throws \Exception
+     */
+    public function __construct($secretKey, $secretIv, $cipherAlgorithm)
     {
-        $this->secret = $secret;
-        $mod = mcrypt_module_open(MCRYPT_DES, '', MCRYPT_MODE_ECB, '');
-        $this->iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($mod), MCRYPT_RAND);
+        $this->cipherAlgorithm = $cipherAlgorithm ?: self::CIPHER_ALGORITHM;
+
+        if (!in_array($this->cipherAlgorithm, openssl_get_cipher_methods(true))) {
+            throw new \Exception("NzoUrlEncryptor:: - unknown cipher algorithm {$this->cipherAlgorithm}");
+        }
+
+        $this->secretKey = $secretKey;
+        $this->iv = substr(hash(self::HASH_ALGORITHM, $secretIv ?: $this->secretKey), 0, 16);
     }
 
     /**
@@ -33,7 +62,7 @@ class UrlEncryptor
      */
     public function encrypt($plainText)
     {
-        $encrypted = mcrypt_encrypt(MCRYPT_3DES, $this->secret, $plainText, MCRYPT_MODE_ECB, $this->iv);
+        $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, 0, $this->iv);
 
         return $this->base64UrlEncode($encrypted);
     }
@@ -44,8 +73,7 @@ class UrlEncryptor
      */
     public function decrypt($encrypted)
     {
-
-        $decrypted = mcrypt_decrypt(MCRYPT_3DES, $this->secret, $this->base64UrlDecode($encrypted), MCRYPT_MODE_ECB, $this->iv);
+        $decrypted = openssl_decrypt($this->base64UrlDecode($encrypted), $this->cipherAlgorithm, $this->secretKey, 0, $this->iv);
 
         return trim($decrypted);
     }
