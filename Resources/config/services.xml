@@ -22,6 +22,8 @@
     <services>
         <service id="nzo_url_encryptor" class="%nzo_url_encryptor.class%">
             <argument>%nzo_url_encryptor.secret_key%</argument>
+            <argument>%nzo_url_encryptor.secret_iv%</argument>
+            <argument>%nzo_url_encryptor.cipher_algorithm%</argument>
         </service>
 
         <service id="nzo.twig.url_encryptor_extension" class="%encryptor_extension.class%">

@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
  */
 class NzoUrlEncryptorExtension extends Extension
 {
+    const MAX_LENGTH = 100;
 
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -32,14 +33,24 @@ class NzoUrlEncryptorExtension extends Extension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
 
-        $secret = $config['secret'];
+        $container->setParameter('nzo_url_encryptor.secret_key', $this->cleanKey($config['secret_key']));
+        $container->setParameter('nzo_url_encryptor.secret_iv', $this->cleanKey($config['secret_iv']));
+        $container->setParameter('nzo_url_encryptor.cipher_algorithm', $config['cipher_algorithm']);
+    }
 
-        if (strlen($secret) < 24) {
-            $secret = str_pad($secret, 24, "\0", STR_PAD_RIGHT);
-        } else {
-            $secret = substr($secret, 0, 24);
+    /**
+     * @param string $key
+     * @return string
+     */
+    private function cleanKey($key)
+    {
+        if ('' !== $key) {
+            $key = trim($key);
+            if (strlen($key) > self::MAX_LENGTH) {
+                $key = substr($key, 0, self::MAX_LENGTH);
+            }
         }
 
-        $container->setParameter('nzo_url_encryptor.secret_key', $secret);
+        return $key;
     }
 }

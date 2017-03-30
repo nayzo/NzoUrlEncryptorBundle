@@ -29,7 +29,9 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('nzo_url_encryptor');
 
         $rootNode->children()
-            ->scalarNode("secret")->defaultValue("")->end()
+            ->scalarNode('secret_key')->defaultValue('')->end()
+            ->scalarNode('secret_iv')->defaultValue('')->end()
+            ->scalarNode('cipher_algorithm')->defaultValue('')->end()
             ->end();
 
         return $treeBuilder;
