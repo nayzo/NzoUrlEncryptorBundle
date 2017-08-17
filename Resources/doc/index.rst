@@ -108,7 +108,7 @@ my-path-in-the-routing:
 
 #### In the controller with annotation service:
 
-Use the annotation service to ``decrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` annotation service and specifying in it all the parameters to be decrypted.
+Use the annotation service to ``decrypt`` / ``encrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` / ``ParamEncryptor`` annotation service and specifying in it all the parameters to be decrypted/encrypted.
 
 ```php
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
@@ -122,6 +122,20 @@ use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
         //...
     }
+
+
+
+    use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
+    //...
+
+        /**
+         * @ParamEncryptor(params={"id", "bar"})
+         */
+         public function indexAction($id, $bar)
+        {
+            // no need to use the encryption service here as the parameters are already encrypted by the annotation service.
+            //...
+        }
 ```
 
 #### In the controller without annotation service:
