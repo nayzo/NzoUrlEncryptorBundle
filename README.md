@@ -16,7 +16,7 @@ Features include:
 - Data Encryption & Decryption
 - Access from Twig by ease
 - Flexible configuration
-- Compatible php 7.1
+- Compatible php 7
 - Uses OpenSSL extension
 
 
