@@ -14,8 +14,7 @@ namespace Nzo\UrlEncryptorBundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
-use Symfony\Component\DependencyInjection\Loader;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
  * Class NzoUrlEncryptorExtension
@@ -30,8 +29,8 @@ class NzoUrlEncryptorExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('services.xml');
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('services.yml');
 
         $container->setParameter('nzo_url_encryptor.secret_key', $this->cleanKey($config['secret_key']));
         $container->setParameter('nzo_url_encryptor.secret_iv', $this->cleanKey($config['secret_iv']));

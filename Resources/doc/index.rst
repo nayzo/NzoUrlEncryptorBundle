@@ -11,12 +11,13 @@ Also it prevent users from reading and modifying sensitive data sent through the
 
 Features include:
 
+- Compatible Symfony version 2, 3 & 4
 - Url Data & parameters Encryption
 - Url Data & parameters Decryption
 - Data Encryption & Decryption
 - Access from Twig by ease
 - Flexible configuration
-- Compatible php 7.1
+- Compatible php version 5 & 7
 - Uses OpenSSL extension
 
 
@@ -31,7 +32,7 @@ Install the bundle:
 $ composer require nzo/url-encryptor-bundle
 ```
 
-### Register the bundle in app/AppKernel.php:
+### Register the bundle in app/AppKernel.php (Symfony V2 or V3):
 
 ``` php
 // app/AppKernel.php
@@ -50,7 +51,8 @@ public function registerBundles()
 Configure your secret encryption key:
 
 ``` yml
-# app/config/config.yml
+# app/config/config.yml (Symfony V2 or V3)
+# config/packages/nzo_url_encryptor.yaml (Symfony V4)
 
 nzo_url_encryptor:
     secret_key: YourSecretEncryptionKey    # optional, max length of 100 characters.

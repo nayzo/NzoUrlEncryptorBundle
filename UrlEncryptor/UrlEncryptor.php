@@ -44,7 +44,7 @@ class UrlEncryptor
      *
      * @throws \Exception
      */
-    public function __construct($secretKey, $secretIv, $cipherAlgorithm)
+    public function __construct($secretKey = '', $secretIv = '', $cipherAlgorithm = '')
     {
         $this->cipherAlgorithm = $cipherAlgorithm ?: self::CIPHER_ALGORITHM;
 
