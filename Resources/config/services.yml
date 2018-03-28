@@ -1,0 +1,25 @@
+services:
+
+    Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor: "@nzo_url_encryptor"
+
+    nzo_url_encryptor:
+        class: Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor
+        arguments:
+            - "%nzo_url_encryptor.secret_key%"
+            - "%nzo_url_encryptor.secret_iv%"
+            - "%nzo_url_encryptor.cipher_algorithm%"
+
+    nzo.twig.url_encryptor_extension:
+        class: Nzo\UrlEncryptorBundle\Twig\UrlEncryptorExtension
+        arguments:
+            - "@nzo_url_encryptor"
+        tags:
+            - { name: twig.extension }
+
+    nzo.annotation_resolver:
+        class: Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver
+        arguments:
+            - "@annotations.reader"
+            - "@nzo_url_encryptor"
+        tags:
+            - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }

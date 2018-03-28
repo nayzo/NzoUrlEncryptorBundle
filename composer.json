@@ -10,24 +10,18 @@
             "email": "alakhefifi@gmail.com"
         }
     ],
-    "conflict": {
-        "twig/twig": "<1.12"
+    "autoload": {
+        "psr-4": { "Nzo\\UrlEncryptorBundle\\": "" }
     },
     "require": {
         "php": ">=5.3.3",
         "ext-openssl": "*",
-        "symfony/framework-bundle": "~2.3|~3.0"
+        "symfony/framework-bundle": "^2.3|^3.0|^4.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.8|~5.0"
+        "phpunit/phpunit": "^4.8|^5.0"
     },
-    "autoload": {
-        "psr-0": { "Nzo\\UrlEncryptorBundle": "" }
-    },
-    "target-dir": "Nzo/UrlEncryptorBundle",
-    "extra": {
-        "branch-alias": {
-            "dev-master": "4.x-dev"
-        }
+    "conflict": {
+        "twig/twig": "<1.12"
     }
 }
