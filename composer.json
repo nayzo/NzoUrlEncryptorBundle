@@ -1,13 +1,13 @@
 {
-    "name": "nzo/url-encryptor-bundle",
+    "name": "vereschak/url-encryptor-bundle",
     "type": "symfony-bundle",
     "description": "The NzoUrlEncryptorBundle is a Symfony Bundle used to Encrypt and Decrypt data and variables in the Web application or passed through URL",
     "keywords": ["Link", "url", "encryption", "decryption", "encrypt", "decrypt", "id", "data", "variable", "security"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Ala Eddine Khefifi",
-            "email": "alakhefifi@gmail.com"
+            "name": "Danil Vereschak",
+            "email": "danil.vereschak@gmail.com"
         }
     ],
     "autoload": {
