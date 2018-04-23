@@ -29,7 +29,7 @@ Installation
 Install the bundle:
 
 ```
-$ composer require nzo/url-encryptor-bundle
+$ composer require vereschak/url-encryptor-bundle
 ```
 
 ### Register the bundle in app/AppKernel.php (Symfony V2 or V3):

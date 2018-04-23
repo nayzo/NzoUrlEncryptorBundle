@@ -57,6 +57,20 @@ class UrlEncryptor
     }
 
     /**
+     * Generate new random iv
+     *
+     * @return string
+     */
+    public function regenerateIV()
+    {
+        $strong = true;
+        $secretIv = bin2hex(openssl_random_pseudo_bytes(32, $strong));
+        $this->iv = substr(hash(self::HASH_ALGORITHM, $secretIv ?: $this->secretKey), 0, 16);
+
+        return $this->iv;
+    }
+
+    /**
      * @param string $plainText
      * @return string
      */
@@ -71,9 +85,18 @@ class UrlEncryptor
      * @param string $encrypted
      * @return string
      */
-    public function decrypt($encrypted)
+    public function decrypt($encrypted, $iv = null)
     {
-        $decrypted = openssl_decrypt($this->base64UrlDecode($encrypted), $this->cipherAlgorithm, $this->secretKey, 0, $this->iv);
+        if ($iv) {
+            $this->iv = $iv;
+        }
+        $decrypted = openssl_decrypt(
+            $this->base64UrlDecode($encrypted),
+            $this->cipherAlgorithm,
+            $this->secretKey,
+            0,
+            $this->iv
+        );
 
         return trim($decrypted);
     }
