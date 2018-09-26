@@ -24,6 +24,10 @@ class UrlEncryptorExtension extends \Twig_Extension
      */
     private $urlencryptor;
 
+    /**
+     * UrlEncryptorExtension constructor.
+     * @param UrlEncryptor $urlencryptor
+     */
     public function __construct(UrlEncryptor $urlencryptor)
     {
         $this->urlencryptor = $urlencryptor;

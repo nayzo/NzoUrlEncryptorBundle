@@ -24,12 +24,16 @@ class NzoUrlEncryptorExtension extends Extension
 {
     const MAX_LENGTH = 100;
 
+    /**
+     * @param array $configs
+     * @param ContainerBuilder $container
+     */
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
         $container->setParameter('nzo_url_encryptor.secret_key', $this->cleanKey($config['secret_key']));

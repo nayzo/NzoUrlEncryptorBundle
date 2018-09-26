@@ -72,40 +72,30 @@ Use the twig extensions filters or functions to ``encrypt`` or ``decrypt`` your 
 
 # Encryption:
 
-    <a href="{{path('my-route', {'id': MyId | urlencrypt } )}}"> My link </a>
+    <a href="{{path('my-route', {'id': myId | urlencrypt } )}}"> My link </a>
 
-    {{MyVar | urlencrypt }}
+    {{myVar | urlencrypt }}
 
 # Decryption:
 
-    <a href="{{path('my-route', {'id': MyId | urldecrypt } )}}"> My link </a>
+    <a href="{{path('my-route', {'id': myId | urldecrypt } )}}"> My link </a>
 
-    {{MyVar | urldecrypt }}
+    {{myVar | urldecrypt }}
 
 
 // Functions:
 
 # Encryption:
 
-    <a href="{{path('my-path-in-the-routing', {'id': nzoEncrypt('MyID') } )}}"> My link </a>
+    <a href="{{path('my-path-in-the-routing', {'id': nzoEncrypt('myId') } )}}"> My link </a>
 
-    {{ nzoEncrypt(MyVar) }}
+    {{ nzoEncrypt(myVar) }}
 
 # Decryption:
 
-    <a href="{{path('my-path-in-the-routing', {'id': nzoDecrypt('MyID') } )}}"> My link </a>
+    <a href="{{path('my-path-in-the-routing', {'id': nzoDecrypt('myId') } )}}"> My link </a>
 
-    {{ nzoDecrypt(MyVar) }}
-```
-
-#### In the routing.yml:
-
-``` yml
-# routing.yml
-
-my-path-in-the-routing:
-    path: /my-url/{id}
-    defaults: {_controller: MyBundle:MyController:MyFunction}
+    {{ nzoDecrypt(myVar) }}
 ```
 
 #### In the controller with annotation service:
@@ -147,7 +137,7 @@ Use the ``decrypt`` function of the service to decrypt your data:
 ```php
      public function indexAction($id) 
     {
-        $MyId = $this->get('nzo_url_encryptor')->decrypt($id);
+        $myId = $this->get('nzo_url_encryptor')->decrypt($id);
 
         //...
     }
@@ -160,7 +150,7 @@ You can also use the ``encrypt`` function of the service to encrypt your data:
     {   
         //...
         
-        $Encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
+        $encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
         //...
     }
 ```
