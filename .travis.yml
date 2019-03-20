@@ -17,7 +17,7 @@ cache:
 before_install:
   - composer selfupdate
 
-install: composer update --prefer-dist --no-interaction
+install: COMPOSER_MEMORY_LIMIT=-1 travis_retry composer update --prefer-dist --no-interaction
 
 script:
   - vendor/bin/phpunit
