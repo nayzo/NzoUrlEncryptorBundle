@@ -25,8 +25,13 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('nzo_url_encryptor');
+        $treeBuilder = new TreeBuilder('nzo_url_encryptor');
+        // Keep compatibility with symfony/config < 4.2
+        if (\method_exists($treeBuilder, 'getRootNode')) {
+            $rootNode = $treeBuilder->getRootNode();
+        } else {
+            $rootNode = $treeBuilder->root('nzo_url_encryptor');
+        }
 
         $rootNode
             ->children()
