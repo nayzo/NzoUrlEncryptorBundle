@@ -12,12 +12,15 @@
 namespace Nzo\UrlEncryptorBundle\Twig;
 
 use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
+use Twig\TwigFunction;
 
 /**
  * Class UrlEncryptorExtension
  * @package Nzo\UrlEncryptorBundle\Twig
  */
-class UrlEncryptorExtension extends \Twig_Extension
+class UrlEncryptorExtension extends AbstractExtension
 {
     /**
      * @var UrlEncryptor
@@ -36,16 +39,16 @@ class UrlEncryptorExtension extends \Twig_Extension
     public function getFilters()
     {
         return array(
-            new \Twig_SimpleFilter('urlencrypt', array($this, 'urlencryptFilter')),
-            new \Twig_SimpleFilter('urldecrypt', array($this, 'urldecryptFilter')),
+            new TwigFilter('urlencrypt', array($this, 'urlencryptFilter')),
+            new TwigFilter('urldecrypt', array($this, 'urldecryptFilter')),
         );
     }
 
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('nzoEncrypt', array($this, 'nzoEncryptFunction')),
-            new \Twig_SimpleFunction('nzoDecrypt', array($this, 'nzoDecryptFunction')),
+            new TwigFunction('nzoEncrypt', array($this, 'nzoEncryptFunction')),
+            new TwigFunction('nzoDecrypt', array($this, 'nzoDecryptFunction')),
         );
     }
 
@@ -83,10 +86,5 @@ class UrlEncryptorExtension extends \Twig_Extension
     public function nzoDecryptFunction($key)
     {
         return $this->urlencryptor->decrypt($key);
-    }
-
-    public function getName()
-    {
-        return 'nzo_urlencryptor_extension';
     }
 }
