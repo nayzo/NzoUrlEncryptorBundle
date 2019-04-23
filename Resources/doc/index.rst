@@ -1,7 +1,7 @@
 NzoUrlEncryptorBundle
 =====================
 
-[![Build Status](https://travis-ci.org/NAYZO/NzoUrlEncryptorBundle.svg?branch=master)](https://travis-ci.org/NAYZO/NzoUrlEncryptorBundle)
+[![Build Status](https://travis-ci.org/nayzo/NzoUrlEncryptorBundle.svg?branch=master)](https://travis-ci.org/nayzo/NzoUrlEncryptorBundle)
 [![Total Downloads](https://poser.pugx.org/nzo/url-encryptor-bundle/downloads)](https://packagist.org/packages/nzo/url-encryptor-bundle)
 [![Latest Stable Version](https://poser.pugx.org/nzo/url-encryptor-bundle/v/stable)](https://packagist.org/packages/nzo/url-encryptor-bundle)
 
@@ -160,4 +160,4 @@ License
 
 This bundle is under the MIT license. See the complete license in the bundle:
 
-See [Resources/doc/LICENSE](https://github.com/NAYZO/NzoUrlEncryptorBundle/tree/master/Resources/doc/LICENSE)
+See [Resources/doc/LICENSE](https://github.com/nayzo/NzoUrlEncryptorBundle/tree/master/Resources/doc/LICENSE)
