@@ -104,55 +104,65 @@ Use the annotation service to ``decrypt`` / ``encrypt`` automatically any parame
 
 ```php
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
-//...
+use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
 
+class MyController extends AbstractController
+{
     /**
-     * @ParamDecryptor(params={"id", "bar"})
-     */
-     public function indexAction($id, $bar)
+    * @ParamDecryptor(params={"id", "bar"})
+    */
+    public function decryptionAction($id, $bar)
     {
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
         //...
     }
-    
-    
-    
-    use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
-    //...
-    
-        /**
-         * @ParamEncryptor(params={"id", "bar"})
-         */
-         public function indexAction($id, $bar)
-        {
-            // no need to use the encryption service here as the parameters are already encrypted by the annotation service.
-            //...
-        }
-```
 
-#### In the controller without annotation service:
-
-Use the ``decrypt`` function of the service to decrypt your data:
-
-```php
-     public function indexAction($id) 
+    /**
+    * @ParamEncryptor(params={"id", "bar"})
+    */
+    public function encryptionAction($id, $bar)
     {
-        $myId = $this->get('nzo_url_encryptor')->decrypt($id);
-
+        // no need to use the encryption service here as the parameters are already encrypted by the annotation service.
         //...
     }
+}
 ```
 
-You can also use the ``encrypt`` function of the service to encrypt your data:
+#### In the controller (With autowiring):
 
 ```php
-     public function indexAction() 
-    {   
-        //...
-        
-        $encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
-        //...
+use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
+
+class MyController extends AbstractController
+{
+    private $encryptor;
+
+    public function __construct(UrlEncryptor $encryptor)
+    {
+        $this->encryptor = $encryptor;
     }
+
+    public function indexAction($data) 
+    {
+        $encrypted = $this->encryptor->encrypt($data);
+        
+        $decrypted = $this->encryptor->decrypt($data);
+    }
+}    
+```
+
+#### In the controller (Without autowiring):
+
+```php
+class MyController extends Controller
+{
+    public function indexAction($data) 
+    {
+        $encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
+        
+        $decrypted = $this->get('nzo_url_encryptor')->decrypt($data);
+    }
+}    
 ```
 
 License
