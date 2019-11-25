@@ -51,7 +51,6 @@ class AnnotationResolver
         $objectController = new \ReflectionObject($controller[0]);
         $method = $objectController->getMethod($controller[1]);
         foreach ($this->reader->getMethodAnnotations($method) as $configuration) {
-
             if ($configuration instanceof ParamEncryptor) {
                 if (isset($configuration->params)) {
                     $request = $event->getRequest();

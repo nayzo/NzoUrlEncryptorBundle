@@ -32,7 +32,7 @@ Install the bundle:
 $ composer require nzo/url-encryptor-bundle
 ```
 
-### Register the bundle in app/AppKernel.php (Symfony V2 or V3):
+### Register the bundle in app/AppKernel.php (without Flex):
 
 ``` php
 // app/AppKernel.php
