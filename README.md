@@ -9,15 +9,17 @@ The **NzoUrlEncryptorBundle** is a Symfony Bundle used to Encrypt and Decrypt da
 Also it prevent users from reading and modifying sensitive data sent through the ``URL``.
 
 
+#### This Version (^5.0) is compatible with **Symfony >= 5**, for Symfony 2, 3 and 4 use the composer tag: ^4.3 instead.
+
+
 Features include:
 
-- Compatible Symfony version 2, 3 & 4
+- Compatible Symfony version 5
 - Url Data & parameters Encryption
 - Url Data & parameters Decryption
 - Data Encryption & Decryption
 - Access from Twig by ease
 - Flexible configuration
-- Compatible php version 5 & 7
 - Uses OpenSSL extension
 
 

@@ -13,7 +13,7 @@ namespace Nzo\UrlEncryptorBundle\Annotations;
 
 use Doctrine\Common\Annotations\Reader;
 use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
-use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
+use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class AnnotationResolver
 {
@@ -40,9 +40,9 @@ class AnnotationResolver
     }
 
     /**
-     * @param FilterControllerEvent $event
+     * @param ControllerEvent $event
      */
-    public function onKernelController(FilterControllerEvent $event)
+    public function onKernelController(ControllerEvent $event)
     {
         if (!is_array($controller = $event->getController())) {
             return;
