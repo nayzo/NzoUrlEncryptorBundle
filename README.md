@@ -55,8 +55,8 @@ Configure your secret encryption key:
 # config/packages/nzo_url_encryptor.yaml (Symfony V4)
 
 nzo_url_encryptor:
-    secret_key: YourSecretEncryptionKey    # optional, max length of 100 characters.
-    secret_iv:  YourIvEncryptionKey        # optional, max length of 100 characters.
+    secret_key: YourSecretEncryptionKey    # Required, max length of 100 characters.
+    secret_iv:  YourSecretIv               # Required, max length of 100 characters.
     cipher_algorithm:                      # optional, default: 'aes-256-ctr'
 ```
 
