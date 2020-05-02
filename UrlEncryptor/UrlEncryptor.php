@@ -44,18 +44,18 @@ class UrlEncryptor
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct($secretKey = '', $secretIv = '', $cipherAlgorithm = '')
+    public function __construct($secretKey, $secretIv, $cipherAlgorithm = '')
     {
         $this->cipherAlgorithm = $cipherAlgorithm ?: self::CIPHER_ALGORITHM;
 
-        if (!in_array($this->cipherAlgorithm, openssl_get_cipher_methods(true))) {
+        if (!\in_array($this->cipherAlgorithm, openssl_get_cipher_methods(true))) {
             throw new \InvalidArgumentException(
                 "NzoUrlEncryptor:: - unknown cipher algorithm {$this->cipherAlgorithm}"
             );
         }
 
         $this->secretKey = $secretKey;
-        $this->iv = substr(hash(self::HASH_ALGORITHM, $secretIv ?: $this->secretKey), 0, 16);
+        $this->iv = substr(hash_hmac(self::HASH_ALGORITHM, $secretIv, $this->secretKey, true), 0, openssl_cipher_iv_length($this->cipherAlgorithm));
     }
 
     /**
@@ -64,7 +64,7 @@ class UrlEncryptor
      */
     public function encrypt($plainText)
     {
-        $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, 0, $this->iv);
+        $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, OPENSSL_RAW_DATA, $this->iv);
 
         return $this->base64UrlEncode($encrypted);
     }
@@ -79,7 +79,7 @@ class UrlEncryptor
             $this->base64UrlDecode($encrypted),
             $this->cipherAlgorithm,
             $this->secretKey,
-            0,
+            OPENSSL_RAW_DATA,
             $this->iv
         );
 

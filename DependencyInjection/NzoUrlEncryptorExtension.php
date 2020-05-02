@@ -47,11 +47,9 @@ class NzoUrlEncryptorExtension extends Extension
      */
     private function cleanKey($key)
     {
-        if ('' !== $key) {
-            $key = trim($key);
-            if (strlen($key) > self::MAX_LENGTH) {
-                $key = substr($key, 0, self::MAX_LENGTH);
-            }
+        $key = trim($key);
+        if (strlen($key) > self::MAX_LENGTH) {
+            $key = substr($key, 0, self::MAX_LENGTH);
         }
 
         return $key;
