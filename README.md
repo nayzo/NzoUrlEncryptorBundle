@@ -21,6 +21,17 @@ Features include:
 - Uses OpenSSL extension
 
 
+By default, this bundle is using **aes-256-ctr** algorithm.
+
+CTR mode (without any additional authentication step) is malleable, which means that it is possible to change the meaning of the ciphertext and if the plaintext is guessable then it could lead to [IDOR](https://portswigger.net/web-security/access-control/idor).
+
+Thus, **this bundle should not be used to encrypt sensitive data** since by default it does not prevent users from modifying encrypted ones.
+
+**Since the key is reused, if a user is able to guess the plaintext of one ciphertext he will be able to decrypt any ciphertext.**
+
+###### For the record, before release 5.0.1, the key and iv where not mandatory which means that anyone could have decrypted and modified the encrypted data.
+
+
 Installation
 ------------
 
