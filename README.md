@@ -31,7 +31,7 @@ Thus, **this bundle should not be used to encrypt sensitive data** since by defa
 
 **Since the key is reused, if a user is able to guess the plaintext of one ciphertext he will be able to decrypt any ciphertext.**
 
-###### For the record, before release 5.0.1, the key and iv where not mandatory which means that anyone could have decrypted and modified the encrypted data.
+###### For the record, before releases v5.0.1 and v4.3.2, the key and iv where not mandatory which means that anyone could have decrypted and modified the encrypted data.
 
 
 Installation
