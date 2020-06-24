@@ -33,12 +33,21 @@ class NzoUrlEncryptorExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $cipherAlgorithm = $config['cipher_algorithm'];
+        if (!\in_array($cipherAlgorithm, openssl_get_cipher_methods(true))) {
+            throw new \InvalidArgumentException(
+                "NzoUrlEncryptor:: - unknown cipher algorithm {$cipherAlgorithm}"
+            );
+        }
+
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
         $container->setParameter('nzo_url_encryptor.secret_key', $this->cleanKey($config['secret_key']));
         $container->setParameter('nzo_url_encryptor.secret_iv', $this->cleanKey($config['secret_iv']));
-        $container->setParameter('nzo_url_encryptor.cipher_algorithm', $config['cipher_algorithm']);
+        $container->setParameter('nzo_url_encryptor.cipher_algorithm', $cipherAlgorithm);
+        $container->setParameter('nzo_url_encryptor.base64_encode', (bool)$config['base64_encode']);
+        $container->setParameter('nzo_url_encryptor.random_pseudo_bytes', (bool)$config['random_pseudo_bytes']);
     }
 
     /**
