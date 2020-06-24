@@ -44,7 +44,13 @@ class Configuration implements ConfigurationInterface
                     ->cannotBeEmpty()
                 ->end()
                 ->scalarNode('cipher_algorithm')
-                    ->defaultValue('')
+                    ->defaultValue('aes-128-ctr')
+                ->end()
+                ->booleanNode('base64_encode')
+                    ->defaultValue(true)
+                ->end()
+                ->booleanNode('random_pseudo_bytes')
+                    ->defaultValue(false)
                 ->end()
             ->end();
 
