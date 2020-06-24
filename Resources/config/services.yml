@@ -6,8 +6,11 @@ services:
         class: Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor
         arguments:
             - "%nzo_url_encryptor.secret_key%"
-            - "%nzo_url_encryptor.secret_iv%"
+            - "%nzo_url_encryptor.base64_encode%"
+            - "%nzo_url_encryptor.random_pseudo_bytes%"
             - "%nzo_url_encryptor.cipher_algorithm%"
+        calls:
+            - [setSecretIv, ["%nzo_url_encryptor.secret_iv%"]]
 
     nzo.twig.url_encryptor_extension:
         class: Nzo\UrlEncryptorBundle\Twig\UrlEncryptorExtension

@@ -15,9 +15,12 @@ use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
 
 class NzoUrlEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
 {
-    const SECRET = 'secret_text';
-    const KEY = 'encryptionKeyText';
-    const IV = 'encryptionIvText';
+    const CIPHER_ALGORITHM = 'aes-256-ctr';
+    const PLAIN_TEXT = 'plain_text';
+    const SECRET_KEY = 'encryptionKeyText';
+    const SECRET_IV = 'encryptionIvText';
+    const BASE64_ENCODE = true;
+    const RANDOM_PSEUDO_BYTES = false;
 
     /**
      * @var UrlEncryptor
@@ -26,14 +29,21 @@ class NzoUrlEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function setup()
     {
-        $this->urlEncryptor = new UrlEncryptor(self::KEY, self::IV, '');
+        $this->urlEncryptor = new UrlEncryptor(
+            self::SECRET_KEY,
+            self::BASE64_ENCODE,
+            self::RANDOM_PSEUDO_BYTES,
+            self::CIPHER_ALGORITHM
+        );
+
+        $this->urlEncryptor->setSecretIv(self::SECRET_IV);
     }
 
     public function testEncrypt()
     {
-        $encrypted = $this->urlEncryptor->encrypt(self::SECRET);
+        $encrypted = $this->urlEncryptor->encrypt(self::PLAIN_TEXT);
         $decrypted = $this->urlEncryptor->decrypt($encrypted);
 
-        $this->assertEquals($decrypted, self::SECRET);
+        $this->assertEquals($decrypted, self::PLAIN_TEXT);
     }
 }
