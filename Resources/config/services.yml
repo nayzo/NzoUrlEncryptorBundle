@@ -7,6 +7,7 @@ services:
         arguments:
             - "%nzo_url_encryptor.secret_key%"
             - "%nzo_url_encryptor.base64_encode%"
+            - "%nzo_url_encryptor.format_base64_output%"
             - "%nzo_url_encryptor.random_pseudo_bytes%"
             - "%nzo_url_encryptor.cipher_algorithm%"
         calls:

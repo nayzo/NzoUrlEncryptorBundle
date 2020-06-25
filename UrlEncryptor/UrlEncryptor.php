@@ -32,6 +32,11 @@ class UrlEncryptor
     /**
      * @var bool
      */
+    private $formatBase64Output;
+
+    /**
+     * @var bool
+     */
     private $randomPseudoBytes;
 
     /**
@@ -49,15 +54,17 @@ class UrlEncryptor
      *
      * @param string $secretKey
      * @param bool $base64Encode
+     * @param bool $formatBase64Output
      * @param bool $randomPseudoBytes
      * @param string $cipherAlgorithm
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct($secretKey, $base64Encode, $randomPseudoBytes, $cipherAlgorithm)
+    public function __construct($secretKey, $base64Encode, $formatBase64Output, $randomPseudoBytes, $cipherAlgorithm)
     {
         $this->secretKey = $secretKey;
         $this->base64Encode = $base64Encode;
+        $this->formatBase64Output = $formatBase64Output;
         $this->randomPseudoBytes = $randomPseudoBytes;
         $this->cipherAlgorithm = $cipherAlgorithm;
     }
@@ -111,7 +118,11 @@ class UrlEncryptor
      */
     private function base64UrlEncode($data)
     {
-        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+        if ($this->formatBase64Output) {
+            return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+        }
+
+        return base64_encode($data);
     }
 
     /**
@@ -120,6 +131,10 @@ class UrlEncryptor
      */
     private function base64UrlDecode($data)
     {
-        return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+        if ($this->formatBase64Output) {
+            return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+        }
+
+        return base64_decode($data);
     }
 }

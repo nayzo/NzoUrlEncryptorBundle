@@ -20,6 +20,7 @@ class NzoUrlEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
     const SECRET_KEY = 'encryptionKeyText';
     const SECRET_IV = 'encryptionIvText';
     const BASE64_ENCODE = true;
+    const FORMAT_BASE64_OUTPUT = true;
     const RANDOM_PSEUDO_BYTES = false;
 
     /**
@@ -32,6 +33,7 @@ class NzoUrlEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
         $this->urlEncryptor = new UrlEncryptor(
             self::SECRET_KEY,
             self::BASE64_ENCODE,
+            self::FORMAT_BASE64_OUTPUT,
             self::RANDOM_PSEUDO_BYTES,
             self::CIPHER_ALGORITHM
         );
