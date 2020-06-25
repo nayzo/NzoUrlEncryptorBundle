@@ -70,6 +70,7 @@ nzo_url_encryptor:
     secret_iv:  YourSecretIv               # Required only if "random_pseudo_bytes" is FALSE. Max length of 100 characters.
     cipher_algorithm:                      # optional, default: 'aes-256-ctr'
     base64_encode:                         # optional, default: TRUE
+    format_base64_output:                  # optional, default: TRUE, used only when 'base64_encode' is set to TRUE
     random_pseudo_bytes:                   # optional, default: FALSE (generate a random encrypted text output)
 ```
 

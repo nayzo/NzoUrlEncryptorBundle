@@ -53,6 +53,7 @@ class NzoUrlEncryptorExtension extends Extension
         $container->setParameter('nzo_url_encryptor.secret_iv', $this->cleanKey($config['secret_iv']));
         $container->setParameter('nzo_url_encryptor.cipher_algorithm', $cipherAlgorithm);
         $container->setParameter('nzo_url_encryptor.base64_encode', (bool)$config['base64_encode']);
+        $container->setParameter('nzo_url_encryptor.format_base64_output', (bool)$config['format_base64_output']);
         $container->setParameter('nzo_url_encryptor.random_pseudo_bytes', (bool)$config['random_pseudo_bytes']);
     }
 
