@@ -25,11 +25,6 @@ class UrlEncryptor
     private $secretKey;
 
     /**
-     * @var string
-     */
-    private $iv;
-
-    /**
      * @var bool
      */
     private $base64Encode;
@@ -45,9 +40,14 @@ class UrlEncryptor
     private $cipherAlgorithm;
 
     /**
+     * @var string
+     */
+    private $iv;
+
+    /**
      * UrlEncryptor constructor.
      *
-     * @param string $secretIv
+     * @param string $secretKey
      * @param bool $base64Encode
      * @param bool $randomPseudoBytes
      * @param string $cipherAlgorithm
@@ -56,14 +56,14 @@ class UrlEncryptor
      */
     public function __construct($secretKey, $base64Encode, $randomPseudoBytes, $cipherAlgorithm)
     {
+        $this->secretKey = $secretKey;
         $this->base64Encode = $base64Encode;
         $this->randomPseudoBytes = $randomPseudoBytes;
         $this->cipherAlgorithm = $cipherAlgorithm;
-        $this->secretKey = $secretKey;
     }
 
     /**
-     * @param string $secretKey
+     * @param string $secretIv
      */
     public function setSecretIv($secretIv)
     {

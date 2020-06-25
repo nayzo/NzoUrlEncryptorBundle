@@ -40,6 +40,12 @@ class NzoUrlEncryptorExtension extends Extension
             );
         }
 
+        if (false === (bool)$config['random_pseudo_bytes'] && empty($config['secret_iv'])) {
+            throw new \InvalidArgumentException(
+                "NzoUrlEncryptor:: - 'secret_iv' cannot be empty when 'random_pseudo_bytes' is set to FALSE !"
+            );
+        }
+
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
