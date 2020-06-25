@@ -91,6 +91,7 @@ class UrlEncryptor
     public function encrypt($plainText)
     {
         $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, OPENSSL_RAW_DATA, $this->iv);
+        $encrypted = $this->iv.$encrypted;
 
         return $this->base64Encode ? $this->base64UrlEncode($encrypted) : $encrypted;
     }
@@ -101,12 +102,17 @@ class UrlEncryptor
      */
     public function decrypt($encrypted)
     {
+        $ivLength = openssl_cipher_iv_length($this->cipherAlgorithm);
+        $encrypted = $this->base64Encode ? $this->base64UrlDecode($encrypted) : $encrypted;
+        $iv = substr($encrypted, 0, $ivLength);
+        $raw = substr($encrypted, $ivLength);
+
         $decrypted = openssl_decrypt(
-            $this->base64Encode ? $this->base64UrlDecode($encrypted) : $encrypted,
+            $raw,
             $this->cipherAlgorithm,
             $this->secretKey,
             OPENSSL_RAW_DATA,
-            $this->iv
+            $iv
         );
 
         return trim($decrypted);
