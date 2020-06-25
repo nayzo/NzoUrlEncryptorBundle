@@ -69,10 +69,10 @@ Configure your secret encryption key:
 
 nzo_url_encryptor:
     secret_key: YourSecretEncryptionKey    # Required, max length of 100 characters.
-    secret_iv:  YourSecretIv               # Required, max length of 100 characters.
+    secret_iv:  YourSecretIv               # Required only if "random_pseudo_bytes" is FALSE. Max length of 100 characters.
     cipher_algorithm:                      # optional, default: 'aes-256-ctr'
-    base64_encode:                         # optional, default: true
-    random_pseudo_bytes:                   # optional, default: false
+    base64_encode:                         # optional, default: TRUE
+    random_pseudo_bytes:                   # optional, default: FALSE (generate a random encrypted text output)
 ```
 
 Usage
