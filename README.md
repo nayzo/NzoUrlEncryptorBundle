@@ -9,12 +9,11 @@ The **NzoUrlEncryptorBundle** is a Symfony Bundle used to Encrypt and Decrypt da
 Also it prevent users from reading and modifying sensitive data sent through the ``URL``.
 
 
-#### This Version (^5.0) is compatible with **Symfony >= 5**, for Symfony 2, 3 and 4 use the composer tag: ^4.3 instead.
+#### This Version (^6.0) is compatible with **Symfony >= 4.4**
 
 
 Features include:
 
-- Compatible Symfony version 5
 - Url Data & parameters Encryption
 - Url Data & parameters Decryption
 - Data Encryption & Decryption
@@ -23,15 +22,11 @@ Features include:
 - Uses OpenSSL extension
 
 
-By default, this bundle is using **aes-256-ctr** algorithm.
+By default, this bundle use the **aes-256-ctr** algorithm.
 
-CTR mode (without any additional authentication step) is malleable, which means that it is possible to change the meaning of the ciphertext and if the plaintext is guessable then it could lead to [IDOR](https://portswigger.net/web-security/access-control/idor).
+CTR mode (without any additional authentication step) is malleable, which means that it is possible to change the meaning of the ciphertext and if the plaintext is guessable then it could lead to IDOR.
 
-Thus, **this bundle should not be used to encrypt sensitive data** since by default it does not prevent users from modifying encrypted ones.
-
-**Since the key is reused, if a user is able to guess the plaintext of one ciphertext he will be able to decrypt any ciphertext.**
-
-###### For the record, before releases v5.0.1 and v4.3.2, the key and iv where not mandatory which means that anyone could have decrypted and modified the encrypted data.
+##### For more secure output, you must configure the bundle to use a **unique and random IV** (`random_pseudo_bytes: TRUE`)
 
 
 Installation
@@ -64,17 +59,19 @@ public function registerBundles()
 Configure your secret encryption key:
 
 ``` yml
-# app/config/config.yml (Symfony V2 or V3)
-# config/packages/nzo_url_encryptor.yaml (Symfony V4)
+# config/packages/nzo_encryptor.yaml
 
-nzo_url_encryptor:
+nzo_encryptor:
     secret_key: YourSecretEncryptionKey    # Required, max length of 100 characters.
     secret_iv:  YourSecretIv               # Required only if "random_pseudo_bytes" is FALSE. Max length of 100 characters.
     cipher_algorithm:                      # optional, default: 'aes-256-ctr'
     base64_encode:                         # optional, default: TRUE
     format_base64_output:                  # optional, default: TRUE, used only when 'base64_encode' is set to TRUE
-    random_pseudo_bytes:                   # optional, default: FALSE (generate a random encrypted text output)
+    random_pseudo_bytes:                   # optional, default: TRUE (generate a random encrypted text output each time => MORE SECURE !)
 ```
+
+##### - To generate the same cypher text each time: `random_pseudo_bytes: FALSE` (Not Secure)
+##### - To generate a different cypher text each time: `random_pseudo_bytes: TRUE` (Secure)
 
 Usage
 -----
@@ -88,30 +85,30 @@ Use the twig extensions filters or functions to ``encrypt`` or ``decrypt`` your 
 
 # Encryption:
 
-    <a href="{{path('my-route', {'id': myId | urlencrypt } )}}"> My link </a>
+    <a href="{{path('my-route', {'id': myId | nzo_encrypt } )}}"> My link </a>
 
-    {{myVar | urlencrypt }}
+    {{myVar | nzo_encrypt }}
 
 # Decryption:
 
-    <a href="{{path('my-route', {'id': myId | urldecrypt } )}}"> My link </a>
+    <a href="{{path('my-route', {'id': myId | nzo_decrypt } )}}"> My link </a>
 
-    {{myVar | urldecrypt }}
+    {{myVar | nzo_decrypt }}
 
 
 // Functions:
 
 # Encryption:
 
-    <a href="{{path('my-path-in-the-routing', {'id': nzoEncrypt('myId') } )}}"> My link </a>
+    <a href="{{path('my-path-in-the-routing', {'id': nzo_encrypt('myId') } )}}"> My link </a>
 
-    {{ nzoEncrypt(myVar) }}
+    {{ nzo_encrypt(myVar) }}
 
 # Decryption:
 
-    <a href="{{path('my-path-in-the-routing', {'id': nzoDecrypt('myId') } )}}"> My link </a>
+    <a href="{{path('my-path-in-the-routing', {'id': nzo_decrypt('myId') } )}}"> My link </a>
 
-    {{ nzoDecrypt(myVar) }}
+    {{ nzo_decrypt(myVar) }}
 ```
 
 #### In the controller with annotation service:
@@ -122,21 +119,21 @@ Use the annotation service to ``decrypt`` / ``encrypt`` automatically any parame
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
 use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
 
-class MyController extends AbstractController
+class MyController
 {
     /**
-    * @ParamDecryptor(params={"id", "bar"})
+    * @ParamDecryptor(params={"id", "foo"})
     */
-    public function decryptionAction($id, $bar)
+    public function decryptionAction($id, $foo)
     {
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
         //...
     }
 
     /**
-    * @ParamEncryptor(params={"id", "bar"})
+    * @ParamEncryptor(params={"id", "foo"})
     */
-    public function encryptionAction($id, $bar)
+    public function encryptionAction($id, $foo)
     {
         // no need to use the encryption service here as the parameters are already encrypted by the annotation service.
         //...
@@ -144,16 +141,16 @@ class MyController extends AbstractController
 }
 ```
 
-#### In the controller (With autowiring):
+#### With autowiring:
 
 ```php
-use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
+use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
 
-class MyController extends AbstractController
+class MyController
 {
     private $encryptor;
 
-    public function __construct(UrlEncryptor $encryptor)
+    public function __construct(Encryptor $encryptor)
     {
         $this->encryptor = $encryptor;
     }
@@ -167,16 +164,16 @@ class MyController extends AbstractController
 }    
 ```
 
-#### In the controller (Without autowiring):
+#### Without autowiring:
 
 ```php
-class MyController extends Controller
+class MyController
 {
     public function indexAction($data) 
     {
-        $encrypted = $this->get('nzo_url_encryptor')->encrypt($data);
+        $encrypted = $this->get('nzo_encryptor')->encrypt($data);
         
-        $decrypted = $this->get('nzo_url_encryptor')->decrypt($data);
+        $decrypted = $this->get('nzo_encryptor')->decrypt($data);
     }
 }    
 ```
@@ -186,4 +183,4 @@ License
 
 This bundle is under the MIT license. See the complete license in the bundle:
 
-See [Resources/doc/LICENSE](https://github.com/nayzo/NzoUrlEncryptorBundle/tree/master/Resources/doc/LICENSE)
+See [LICENSE](https://github.com/nayzo/NzoUrlEncryptorBundle/tree/master/LICENSE)

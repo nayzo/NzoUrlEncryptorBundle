@@ -1,22 +1,22 @@
 services:
 
-    Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor: "@nzo_url_encryptor"
+    Nzo\UrlEncryptorBundle\Encryptor\Encryptor: "@nzo_encryptor"
 
-    nzo_url_encryptor:
-        class: Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor
+    nzo_encryptor:
+        class: Nzo\UrlEncryptorBundle\Encryptor\Encryptor
         arguments:
-            - "%nzo_url_encryptor.secret_key%"
-            - "%nzo_url_encryptor.base64_encode%"
-            - "%nzo_url_encryptor.format_base64_output%"
-            - "%nzo_url_encryptor.random_pseudo_bytes%"
-            - "%nzo_url_encryptor.cipher_algorithm%"
+            - "%nzo_encryptor.secret_key%"
+            - "%nzo_encryptor.cipher_algorithm%"
+            - "%nzo_encryptor.base64_encode%"
+            - "%nzo_encryptor.format_base64_output%"
+            - "%nzo_encryptor.random_pseudo_bytes%"
         calls:
-            - [setSecretIv, ["%nzo_url_encryptor.secret_iv%"]]
+            - [setSecretIv, ["%nzo_encryptor.secret_iv%"]]
 
-    nzo.twig.url_encryptor_extension:
-        class: Nzo\UrlEncryptorBundle\Twig\UrlEncryptorExtension
+    nzo.twig.encryptor_extension:
+        class: Nzo\UrlEncryptorBundle\Twig\EncryptorExtension
         arguments:
-            - "@nzo_url_encryptor"
+            - "@nzo_encryptor"
         tags:
             - { name: twig.extension }
 
@@ -24,6 +24,6 @@ services:
         class: Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver
         arguments:
             - "@annotations.reader"
-            - "@nzo_url_encryptor"
+            - "@nzo_encryptor"
         tags:
             - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }

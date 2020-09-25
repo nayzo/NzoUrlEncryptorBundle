@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="./Tests/bootstrap.php" colors="true">
+<phpunit bootstrap="./tests/bootstrap.php" colors="true">
 
     <testsuites>
-        <testsuite name="Nzo Url Encryptor Bundle Test Suite">
-            <directory>./Tests</directory>
+        <testsuite name="NzoUrlEncryptorBundle Test Suite">
+            <directory>./tests</directory>
         </testsuite>
     </testsuites>
 
@@ -12,7 +12,7 @@
         <whitelist>
             <directory>./</directory>
             <exclude>
-                <directory>./Tests</directory>
+                <directory>./tests</directory>
                 <directory>./vendor</directory>
             </exclude>
         </whitelist>

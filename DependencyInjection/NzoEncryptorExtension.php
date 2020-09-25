@@ -1,7 +1,7 @@
 <?php
 
 /*
- * NzoUrlEncryptorExtension file.
+ * This file is part of the NzoUrlEncryptorBundle package.
  *
  * (c) Ala Eddine Khefifi <alakhefifi@gmail.com>
  *
@@ -16,18 +16,10 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-/**
- * Class NzoUrlEncryptorExtension
- * @package Nzo\UrlEncryptorBundle\DependencyInjection
- */
-class NzoUrlEncryptorExtension extends Extension
+class NzoEncryptorExtension extends Extension
 {
     const MAX_LENGTH = 100;
 
-    /**
-     * @param array $configs
-     * @param ContainerBuilder $container
-     */
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = new Configuration();
@@ -36,33 +28,33 @@ class NzoUrlEncryptorExtension extends Extension
         $cipherAlgorithm = $config['cipher_algorithm'];
         if (!\in_array($cipherAlgorithm, openssl_get_cipher_methods(true))) {
             throw new \InvalidArgumentException(
-                "NzoUrlEncryptor:: - unknown cipher algorithm {$cipherAlgorithm}"
+                "NzoEncryptor:: - unknown cipher algorithm {$cipherAlgorithm}"
             );
         }
 
         if (false === (bool)$config['random_pseudo_bytes'] && empty($config['secret_iv'])) {
             throw new \InvalidArgumentException(
-                "NzoUrlEncryptor:: - 'secret_iv' cannot be empty when 'random_pseudo_bytes' is set to FALSE !"
+                "NzoEncryptor:: - 'secret_iv' cannot be empty when 'random_pseudo_bytes' is set to FALSE !"
             );
         }
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
-        $container->setParameter('nzo_url_encryptor.secret_key', $this->cleanKey($config['secret_key']));
-        $container->setParameter('nzo_url_encryptor.secret_iv', $this->cleanKey($config['secret_iv']));
-        $container->setParameter('nzo_url_encryptor.cipher_algorithm', $cipherAlgorithm);
-        $container->setParameter('nzo_url_encryptor.base64_encode', (bool)$config['base64_encode']);
-        $container->setParameter('nzo_url_encryptor.format_base64_output', (bool)$config['format_base64_output']);
-        $container->setParameter('nzo_url_encryptor.random_pseudo_bytes', (bool)$config['random_pseudo_bytes']);
+        $container->setParameter('nzo_encryptor.secret_key', $this->cleanKey($config['secret_key']));
+        $container->setParameter('nzo_encryptor.secret_iv', $this->cleanKey($config['secret_iv']));
+        $container->setParameter('nzo_encryptor.cipher_algorithm', $cipherAlgorithm);
+        $container->setParameter('nzo_encryptor.base64_encode', (bool)$config['base64_encode']);
+        $container->setParameter('nzo_encryptor.format_base64_output', (bool)$config['format_base64_output']);
+        $container->setParameter('nzo_encryptor.random_pseudo_bytes', (bool)$config['random_pseudo_bytes']);
     }
 
-    /**
-     * @param string $key
-     * @return string
-     */
-    private function cleanKey($key)
+    private function cleanKey(?string $key = null): string
     {
+        if (empty($key)) {
+            return '';
+        }
+
         $key = trim($key);
         if (strlen($key) > self::MAX_LENGTH) {
             $key = substr($key, 0, self::MAX_LENGTH);
