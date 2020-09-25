@@ -1,7 +1,7 @@
 <?php
 
 /*
- * NzoUrlEncryptorBundle file.
+ * This file is part of the NzoUrlEncryptorBundle package.
  *
  * (c) Ala Eddine Khefifi <alakhefifi@gmail.com>
  *
@@ -11,14 +11,13 @@
 
 namespace Nzo\UrlEncryptorBundle;
 
+use Nzo\UrlEncryptorBundle\DependencyInjection\NzoEncryptorExtension;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-/**
- * NzoUrlEncryptorBundle.
- *
- * @author Ala Eddine Khefifi <alakhefifi@gmail.com>
- * Website   www.alakhefifi.com
- */
 class NzoUrlEncryptorBundle extends Bundle
 {
+    public function getContainerExtension()
+    {
+        return new NzoEncryptorExtension();
+    }
 }

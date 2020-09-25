@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Configuration file.
+ * This file is part of the NzoUrlEncryptorBundle package.
  *
  * (c) Ala Eddine Khefifi <alakhefifi@gmail.com>
  *
@@ -14,10 +14,6 @@ namespace Nzo\UrlEncryptorBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
-/**
- * Class Configuration
- * @package Nzo\UrlEncryptorBundle\DependencyInjection
- */
 class Configuration implements ConfigurationInterface
 {
     /**
@@ -25,13 +21,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder('nzo_url_encryptor');
-        // Keep compatibility with symfony/config < 4.2
-        if (\method_exists($treeBuilder, 'getRootNode')) {
-            $rootNode = $treeBuilder->getRootNode();
-        } else {
-            $rootNode = $treeBuilder->root('nzo_url_encryptor');
-        }
+        $treeBuilder = new TreeBuilder('nzo_encryptor');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->children()
@@ -43,7 +34,7 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue('')
                 ->end()
                 ->scalarNode('cipher_algorithm')
-                    ->defaultValue('aes-128-ctr')
+                    ->defaultValue('aes-256-ctr')
                 ->end()
                 ->booleanNode('base64_encode')
                     ->defaultValue(true)
@@ -52,7 +43,7 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue(true)
                 ->end()
                 ->booleanNode('random_pseudo_bytes')
-                    ->defaultValue(false)
+                    ->defaultValue(true)
                 ->end()
             ->end();
 

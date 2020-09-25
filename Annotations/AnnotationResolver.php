@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Configuration file.
+ * This file is part of the NzoUrlEncryptorBundle package.
  *
  * (c) Ala Eddine Khefifi <alakhefifi@gmail.com>
  *
@@ -12,36 +12,20 @@
 namespace Nzo\UrlEncryptorBundle\Annotations;
 
 use Doctrine\Common\Annotations\Reader;
-use Nzo\UrlEncryptorBundle\UrlEncryptor\UrlEncryptor;
+use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class AnnotationResolver
 {
-    /**
-     * @var Reader
-     */
     private $reader;
-
-    /**
-     * @var UrlEncryptor
-     */
     private $decryptor;
 
-    /**
-     * AnnotationResolver constructor.
-     *
-     * @param Reader $reader
-     * @param UrlEncryptor $decryptor
-     */
-    public function __construct(Reader $reader, UrlEncryptor $decryptor)
+    public function __construct(Reader $reader, Encryptor $decryptor)
     {
         $this->reader = $reader;
         $this->decryptor = $decryptor;
     }
 
-    /**
-     * @param ControllerEvent $event
-     */
     public function onKernelController(ControllerEvent $event)
     {
         if (!is_array($controller = $event->getController())) {

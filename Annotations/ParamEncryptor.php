@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Configuration file.
+ * This file is part of the NzoUrlEncryptorBundle package.
  *
  * (c) Ala Eddine Khefifi <alakhefifi@gmail.com>
  *
