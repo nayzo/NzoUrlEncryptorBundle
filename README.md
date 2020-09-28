@@ -40,18 +40,15 @@ Install the bundle:
 $ composer require nzo/url-encryptor-bundle
 ```
 
-### Register the bundle in app/AppKernel.php (without Flex):
+### Register the bundle in config/bundles.php (without Flex):
 
 ``` php
-// app/AppKernel.php
+// config/bundles.php
 
-public function registerBundles()
-{
-    return array(
-        // ...
-        new Nzo\UrlEncryptorBundle\NzoUrlEncryptorBundle(),
-    );
-}
+return [
+    // ...
+    Nzo\UrlEncryptorBundle\NzoUrlEncryptorBundle::class => ['all' => true],
+];
 ```
 
 ### Configure your application's config.yml:
