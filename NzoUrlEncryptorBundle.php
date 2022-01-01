@@ -12,11 +12,12 @@
 namespace Nzo\UrlEncryptorBundle;
 
 use Nzo\UrlEncryptorBundle\DependencyInjection\NzoEncryptorExtension;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class NzoUrlEncryptorBundle extends Bundle
 {
-    public function getContainerExtension()
+    public function getContainerExtension(): ?ExtensionInterface
     {
         return new NzoEncryptorExtension();
     }
