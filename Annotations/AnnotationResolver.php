@@ -34,11 +34,25 @@ class AnnotationResolver
 
         $objectController = new \ReflectionObject($controller[0]);
         $method = $objectController->getMethod($controller[1]);
-        foreach ($this->reader->getMethodAnnotations($method) as $configuration) {
+
+        // handle php8 annotation
+        if (class_exists('ReflectionAttribute')) {
+            $annotations = $this->getAnnotation($method);
+        } else {
+            $annotations = $this->reader->getMethodAnnotations($method);
+        }
+
+
+        foreach ($annotations as $configuration) {
+            // handle php8 annotation
+            if (class_exists('ReflectionAttribute')) {
+                $configuration = $this->handleReflectionAttribute($configuration);
+            }
+
             if ($configuration instanceof ParamEncryptor) {
                 if (isset($configuration->params)) {
                     $request = $event->getRequest();
-                    foreach ($configuration->params as $key => $param) {
+                    foreach ($configuration->params as $param) {
                         if ($request->attributes->has($param)) {
                             $decrypted = $this->decryptor->encrypt($request->attributes->get($param));
                             $request->attributes->set($param, $decrypted);
@@ -51,7 +65,7 @@ class AnnotationResolver
             } elseif ($configuration instanceof ParamDecryptor) {
                 if (isset($configuration->params)) {
                     $request = $event->getRequest();
-                    foreach ($configuration->params as $key => $param) {
+                    foreach ($configuration->params as $param) {
                         if ($request->attributes->has($param)) {
                             $decrypted = $this->decryptor->decrypt($request->attributes->get($param));
                             $request->attributes->set($param, $decrypted);
@@ -63,5 +77,36 @@ class AnnotationResolver
                 }
             }
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    private function handleReflectionAttribute($configuration)
+    {
+        if ($configuration instanceof \ReflectionAttribute
+            && \in_array($configuration->getName(), [ParamEncryptor::class, ParamDecryptor::class])) {
+
+            $class = $configuration->getName();
+            $arguments = $configuration->getArguments();
+            $customConfiguration = new $class();
+            $customConfiguration->params = \is_array($arguments) && [] !== $arguments && \is_array($arguments[0])
+                ? $arguments[0]
+                : [];
+
+            return $customConfiguration;
+        }
+
+        return $configuration;
+    }
+
+    /**
+     * @return array|mixed
+     */
+    private function getAnnotation($method)
+    {
+        return !empty($this->reader->getMethodAnnotations($method))
+            ? $this->reader->getMethodAnnotations($method)
+            : $method->getAttributes();
     }
 }

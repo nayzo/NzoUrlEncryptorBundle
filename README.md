@@ -119,7 +119,7 @@ use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
 class MyController
 {
     /**
-    * @ParamDecryptor(params={"id", "foo"})
+    * @ParamDecryptor({"id", "foo"})   OR    #[ParamDecryptor(["id", "foo"])]
     */
     public function decryptionAction($id, $foo)
     {
@@ -128,7 +128,7 @@ class MyController
     }
 
     /**
-    * @ParamEncryptor(params={"id", "foo"})
+    * @ParamEncryptor({"id", "foo"})   OR    #[ParamEncryptor(["id", "foo"])]
     */
     public function encryptionAction($id, $foo)
     {
