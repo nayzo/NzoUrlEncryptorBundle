@@ -51,24 +51,22 @@ return [
 ];
 ```
 
-### Configure your application's config.yml:
-
-Configure your secret encryption key:
+### Configure the bundle:
 
 ``` yml
 # config/packages/nzo_encryptor.yaml
 
 nzo_encryptor:
-    secret_key: YourSecretEncryptionKey    # Required, max length of 100 characters.
-    secret_iv:  YourSecretIv               # Required only if "random_pseudo_bytes" is FALSE. Max length of 100 characters.
-    cipher_algorithm:                      # optional, default: 'aes-256-ctr'
-    base64_encode:                         # optional, default: TRUE
-    format_base64_output:                  # optional, default: TRUE, used only when 'base64_encode' is set to TRUE
-    random_pseudo_bytes:                   # optional, default: TRUE (generate a random encrypted text output each time => MORE SECURE !)
+    secret_key: Your_Secret_Encryption_Key   # Required, max length of 100 characters.
+    secret_iv:  Your_Secret_Iv               # Required only if "random_pseudo_bytes" is FALSE. Max length of 100 characters.
+    cipher_algorithm:                        # optional, default: 'aes-256-ctr'
+    base64_encode:                           # optional, default: TRUE
+    format_base64_output:                    # optional, default: TRUE, used only when 'base64_encode' is set to TRUE
+    random_pseudo_bytes:                     # optional, default: TRUE (generate a random encrypted text output each time => MORE SECURE !)
 ```
 
-##### - To generate the same cypher text each time: `random_pseudo_bytes: FALSE` (Not Secure)
-##### - To generate a different cypher text each time: `random_pseudo_bytes: TRUE` (Secure)
+##### * To generate the same cypher text each time: `random_pseudo_bytes: FALSE` (Not Secure)
+##### * To generate a different cypher text each time: `random_pseudo_bytes: TRUE` (Secure)
 
 Usage
 -----
