@@ -26,7 +26,7 @@ class NzoEncryptorExtensionTest extends TestCase
 
     private $encryptor;
 
-    public function setup()
+    public function setup(): void
     {
         $this->encryptor = new Encryptor(
             self::SECRET_KEY,
