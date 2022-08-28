@@ -12,8 +12,9 @@
 namespace Nzo\UrlEncryptorBundle\Tests\Encryptor;
 
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
+use PHPUnit\Framework\TestCase;
 
-class NzoEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
+class NzoEncryptorExtensionTest extends TestCase
 {
     const CIPHER_ALGORITHM = 'aes-256-ctr';
     const PLAIN_TEXT = 'plain_text';
@@ -43,6 +44,6 @@ class NzoEncryptorExtensionTest extends \PHPUnit_Framework_TestCase
         $encrypted = $this->encryptor->encrypt(self::PLAIN_TEXT);
         $decrypted = $this->encryptor->decrypt($encrypted);
 
-        $this->assertEquals($decrypted, self::PLAIN_TEXT);
+        $this->assertEquals(self::PLAIN_TEXT, $decrypted);
     }
 }
