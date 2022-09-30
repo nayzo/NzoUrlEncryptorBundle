@@ -25,7 +25,7 @@ class EncryptorExtension extends AbstractExtension
         $this->encryptor = $encryptor;
     }
 
-    public function getFilters()
+    public function getFilters(): array
     {
         return array(
             new TwigFilter('nzo_encrypt', array($this, 'encryptFilter')),
@@ -33,7 +33,7 @@ class EncryptorExtension extends AbstractExtension
         );
     }
 
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return array(
             new TwigFunction('nzo_encrypt', array($this, 'encryptFunction')),
