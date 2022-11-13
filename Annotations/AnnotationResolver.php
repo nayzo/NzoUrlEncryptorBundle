@@ -29,7 +29,11 @@ class AnnotationResolver
     public function onKernelController(ControllerEvent $event)
     {
         if (!is_array($controller = $event->getController())) {
-            return;
+            $objectController = new \ReflectionObject($controller);
+            $method = $objectController->getMethod('__invoke');
+        } else {
+            $objectController = new \ReflectionObject($controller[0]);
+            $method = $objectController->getMethod($controller[1]);
         }
 
         $objectController = new \ReflectionObject($controller[0]);
