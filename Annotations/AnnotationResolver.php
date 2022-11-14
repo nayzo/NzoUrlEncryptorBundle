@@ -28,12 +28,15 @@ class AnnotationResolver
 
     public function onKernelController(ControllerEvent $event)
     {
-        if (!is_array($controller = $event->getController())) {
+        if (is_array($controller = $event->getController())) {
+            $objectController = new \ReflectionObject($controller[0]);
+            $method = $objectController->getMethod($controller[1]);
+        } elseif (is_object($controller) && method_exists($controller, '__invoke')) {
+            $objectController = new \ReflectionObject($controller);
+            $method = $objectController->getMethod('__invoke');
+        } else {
             return;
         }
-
-        $objectController = new \ReflectionObject($controller[0]);
-        $method = $objectController->getMethod($controller[1]);
 
         // handle php8 annotation
         if (class_exists('ReflectionAttribute')) {
@@ -41,7 +44,6 @@ class AnnotationResolver
         } else {
             $annotations = $this->reader->getMethodAnnotations($method);
         }
-
 
         foreach ($annotations as $configuration) {
             // handle php8 annotation
