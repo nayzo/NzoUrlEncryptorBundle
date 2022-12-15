@@ -14,7 +14,12 @@ namespace Nzo\UrlEncryptorBundle\Annotations;
 /**
  * @Annotation
  */
+#[\Attribute]
 class ParamEncryptor
 {
     public $params;
+
+    public function __construct()
+    {
+    }
 }
