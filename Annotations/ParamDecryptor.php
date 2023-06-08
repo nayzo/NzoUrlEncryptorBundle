@@ -17,9 +17,19 @@ namespace Nzo\UrlEncryptorBundle\Annotations;
 #[\Attribute]
 class ParamDecryptor
 {
-    public $params;
+    private array $params;
 
-    public function __construct()
+    public function __construct(array $params = [])
     {
+        $this->params = $params;
+    }
+
+    public function getParams(): array
+    {
+        if (isset($this->params['value']) && \is_array($this->params['value'])) {
+            return $this->params['value'];
+        }
+
+        return $this->params;
     }
 }
