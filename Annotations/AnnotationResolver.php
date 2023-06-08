@@ -38,7 +38,7 @@ class AnnotationResolver
             return;
         }
 
-        // handle php8 annotation
+        // handle php8 attribute
         if (class_exists('ReflectionAttribute')) {
             $annotations = $this->getAnnotation($method);
         } else {
@@ -46,15 +46,15 @@ class AnnotationResolver
         }
 
         foreach ($annotations as $configuration) {
-            // handle php8 annotation
+            // handle php8 attribute
             if (class_exists('ReflectionAttribute')) {
                 $configuration = $this->handleReflectionAttribute($configuration);
             }
 
             if ($configuration instanceof ParamEncryptor) {
-                if (isset($configuration->params)) {
+                if ($configuration->getParams() !== null) {
                     $request = $event->getRequest();
-                    foreach ($configuration->params as $param) {
+                    foreach ($configuration->getParams() as $param) {
                         if ($request->attributes->has($param)) {
                             $decrypted = $this->decryptor->encrypt($request->attributes->get($param));
                             $request->attributes->set($param, $decrypted);
@@ -65,9 +65,9 @@ class AnnotationResolver
                     }
                 }
             } elseif ($configuration instanceof ParamDecryptor) {
-                if (isset($configuration->params)) {
+                if ($configuration->getParams() !== null) {
                     $request = $event->getRequest();
-                    foreach ($configuration->params as $param) {
+                    foreach ($configuration->getParams() as $param) {
                         if ($request->attributes->has($param)) {
                             $decrypted = $this->decryptor->decrypt($request->attributes->get($param));
                             $request->attributes->set($param, $decrypted);
@@ -91,12 +91,9 @@ class AnnotationResolver
 
             $class = $configuration->getName();
             $arguments = $configuration->getArguments();
-            $customConfiguration = new $class();
-            $customConfiguration->params = \is_array($arguments) && [] !== $arguments && \is_array($arguments[0])
-                ? $arguments[0]
-                : [];
+            $params = \is_array($arguments) && [] !== $arguments && \is_array($arguments[0]) ? $arguments[0] : [];
 
-            return $customConfiguration;
+            return new $class($params);
         }
 
         return $configuration;
