@@ -30,8 +30,8 @@ class ParamDecryptor
             return $this->params['value'];
         }
         
-        if (isset($this->params['param']) && \is_array($this->params['param'])) {
-            return $this->params['param'];
+        if (isset($this->params['params']) && \is_array($this->params['params'])) {
+            return $this->params['params'];
         }
 
         return $this->params;
