@@ -3,7 +3,7 @@
 /*
  * This file is part of the NzoUrlEncryptorBundle package.
  *
- * (c) Ala Eddine Khefifi <alakhefifi@gmail.com>
+ * (c) Ala Eddine Khefifi <alakfpro@gmail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -13,7 +13,7 @@ namespace Nzo\UrlEncryptorBundle\Encryptor;
 
 class Encryptor
 {
-    const HASH_ALGORITHM = 'sha256';
+    private const HASH_ALGORITHM = 'sha256';
 
     private $secretKey;
     private $cipherAlgorithm;
@@ -53,18 +53,20 @@ class Encryptor
 
     /**
      * @param string $plainText
+     *
      * @return string
      */
     public function encrypt($plainText)
     {
         $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, OPENSSL_RAW_DATA, $this->iv);
-        $encrypted = $this->iv.$encrypted;
+        $encrypted = $this->iv . $encrypted;
 
         return $this->base64Encode ? $this->base64Encode($encrypted) : $encrypted;
     }
 
     /**
      * @param string $encrypted
+     *
      * @return string
      */
     public function decrypt($encrypted)
@@ -87,6 +89,7 @@ class Encryptor
 
     /**
      * @param string $data
+     *
      * @return string
      */
     private function base64Encode($data)
@@ -100,14 +103,15 @@ class Encryptor
 
     /**
      * @param string $data
+     *
      * @return string
      */
     private function base64Decode($data)
     {
         if ($this->formatBase64Output) {
-            return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+            return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT), true);
         }
 
-        return base64_decode($data);
+        return base64_decode($data, true);
     }
 }

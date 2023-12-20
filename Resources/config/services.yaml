@@ -19,11 +19,3 @@ services:
             - "@nzo_encryptor"
         tags:
             - { name: twig.extension }
-
-    nzo.annotation_resolver:
-        class: Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver
-        arguments:
-            - "@annotations.reader"
-            - "@nzo_encryptor"
-        tags:
-            - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
