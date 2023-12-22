@@ -3,7 +3,7 @@
 /*
  * This file is part of the NzoUrlEncryptorBundle package.
  *
- * (c) Ala Eddine Khefifi <alakhefifi@gmail.com>
+ * (c) Ala Eddine Khefifi <alakfpro@gmail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -17,13 +17,16 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class AnnotationResolver
 {
-    private $reader;
     private $decryptor;
+    private $reader;
 
-    public function __construct(Reader $reader, Encryptor $decryptor)
+    /**
+     * @param Reader|null $reader
+     */
+    public function __construct(Encryptor $decryptor, $reader)
     {
-        $this->reader = $reader;
         $this->decryptor = $decryptor;
+        $this->reader = $reader;
     }
 
     public function onKernelController(ControllerEvent $event)
@@ -40,6 +43,9 @@ class AnnotationResolver
 
         // handle php8 attribute
         if (class_exists('ReflectionAttribute')) {
+            if ($this->hasAnnotation($method) && !$this->reader instanceof Reader) {
+                throw new \InvalidArgumentException('NzoEncryptor:  Annotation service not loaded, PHP Attributes should be used instead.');
+            }
             $annotations = $this->getAnnotation($method);
         } else {
             $annotations = $this->reader->getMethodAnnotations($method);
@@ -52,7 +58,7 @@ class AnnotationResolver
             }
 
             if ($configuration instanceof ParamEncryptor) {
-                if ($configuration->getParams() !== null) {
+                if (null !== $configuration->getParams()) {
                     $request = $event->getRequest();
                     foreach ($configuration->getParams() as $param) {
                         if ($request->attributes->has($param)) {
@@ -65,7 +71,7 @@ class AnnotationResolver
                     }
                 }
             } elseif ($configuration instanceof ParamDecryptor) {
-                if ($configuration->getParams() !== null) {
+                if (null !== $configuration->getParams()) {
                     $request = $event->getRequest();
                     foreach ($configuration->getParams() as $param) {
                         if ($request->attributes->has($param)) {
@@ -87,8 +93,7 @@ class AnnotationResolver
     private function handleReflectionAttribute($configuration)
     {
         if ($configuration instanceof \ReflectionAttribute
-            && \in_array($configuration->getName(), [ParamEncryptor::class, ParamDecryptor::class])) {
-
+            && \in_array($configuration->getName(), [ParamEncryptor::class, ParamDecryptor::class], true)) {
             $class = $configuration->getName();
             $arguments = $configuration->getArguments();
             $params = \is_array($arguments) && [] !== $arguments && \is_array($arguments[0]) ? $arguments[0] : [];
@@ -104,8 +109,20 @@ class AnnotationResolver
      */
     private function getAnnotation($method)
     {
-        return !empty($this->reader->getMethodAnnotations($method))
+        return $this->reader instanceof Reader && !empty($this->reader->getMethodAnnotations($method))
             ? $this->reader->getMethodAnnotations($method)
             : $method->getAttributes();
+    }
+
+    /**
+     * @param \ReflectionMethod $method
+     *
+     * @return bool
+     */
+    private function hasAnnotation($method)
+    {
+        $docComment = $method->getDocComment();
+
+        return false !== $docComment && (false !== strpos($docComment, '@ParamEncryptor') || false !== strpos($docComment, '@ParamDecryptor'));
     }
 }
