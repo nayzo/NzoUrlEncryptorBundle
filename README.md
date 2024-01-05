@@ -1,7 +1,7 @@
 NzoUrlEncryptorBundle
 =====================
 
-[![Build Status](https://travis-ci.org/nayzo/NzoUrlEncryptorBundle.svg?branch=master)](https://travis-ci.org/nayzo/NzoUrlEncryptorBundle)
+[![tests](https://github.com/nayzo/NzoUrlEncryptorBundle/actions/workflows/tests.yaml/badge.svg)](https://github.com/nayzo/NzoUrlEncryptorBundle/actions/workflows/tests.yaml)
 [![Total Downloads](https://poser.pugx.org/nzo/url-encryptor-bundle/downloads)](https://packagist.org/packages/nzo/url-encryptor-bundle)
 [![Latest Stable Version](https://poser.pugx.org/nzo/url-encryptor-bundle/v/stable)](https://packagist.org/packages/nzo/url-encryptor-bundle)
 
