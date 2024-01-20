@@ -24,7 +24,7 @@ class NzoUrlEncryptorBundle extends Bundle
         return new NzoEncryptorExtension();
     }
 
-    public function build(ContainerBuilder $container)
+    public function build(ContainerBuilder $container): void
     {
         $container->addCompilerPass(new LoadAnnotationService());
     }
