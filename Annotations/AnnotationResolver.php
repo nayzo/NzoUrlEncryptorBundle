@@ -53,7 +53,7 @@ class AnnotationResolver
 
         foreach ($annotations as $configuration) {
             // handle php8 attribute
-            if (class_exists('ReflectionAttribute')) {
+            if ($configuration instanceof \ReflectionAttribute) {
                 $configuration = $this->handleReflectionAttribute($configuration);
             }
 
@@ -94,11 +94,8 @@ class AnnotationResolver
     {
         if ($configuration instanceof \ReflectionAttribute
             && \in_array($configuration->getName(), [ParamEncryptor::class, ParamDecryptor::class], true)) {
-            $class = $configuration->getName();
-            $arguments = $configuration->getArguments();
-            $params = \is_array($arguments) && [] !== $arguments && \is_array($arguments[0]) ? $arguments[0] : [];
 
-            return new $class($params);
+            return $configuration->newInstance();
         }
 
         return $configuration;

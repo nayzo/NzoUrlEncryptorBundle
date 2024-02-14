@@ -22,15 +22,17 @@ class ParamEncryptor
 
     public function __construct(array $params = [])
     {
-        $this->params = $params;
+        if (isset($params['value']) && \is_array($params['value'])) {
+            $this->params = $params['value'];
+        } elseif (isset($params['params']) && \is_array($params['params'])) {
+            $this->params = $params['params'];
+        } else {
+            $this->params = $params;
+        }
     }
 
     public function getParams(): array
     {
-        if (isset($this->params['value']) && \is_array($this->params['value'])) {
-            return $this->params['value'];
-        }
-
         return $this->params;
     }
 }
