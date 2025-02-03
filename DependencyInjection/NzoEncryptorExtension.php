@@ -37,6 +37,7 @@ class NzoEncryptorExtension extends Extension
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');
 
+        $container->setParameter('nzo_encryptor.annotations', $config['annotations']);
         $container->setParameter('nzo_encryptor.secret_key', $this->cleanKey($config['secret_key']));
         $container->setParameter('nzo_encryptor.secret_iv', $this->cleanKey($config['secret_iv']));
         $container->setParameter('nzo_encryptor.cipher_algorithm', $cipherAlgorithm);

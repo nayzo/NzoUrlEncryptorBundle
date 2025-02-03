@@ -11,7 +11,6 @@
 
 namespace Nzo\UrlEncryptorBundle\DependencyInjection\Compiler;
 
-use Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -19,11 +18,17 @@ class LoadAnnotationService implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        $container
-            ->register('nzo.annotation_resolver', AnnotationResolver::class)
-            ->addArgument($container->getDefinition('nzo_encryptor'))
-            ->addArgument($container->has('annotations.reader') ? $container->getDefinition('annotations.reader') : null)
-            ->addTag('kernel.event_listener', ['event' => 'kernel.controller', 'method' => 'onKernelController'])
-        ;
+        if (false === $enableAnnotations = $container->getParameter('nzo_encryptor.annotations')) {
+            return;
+        }
+
+        if (!($existDoctrineAnnotationReader = $container->has('annotations.reader')) && $enableAnnotations) {
+            throw new \LogicException('The "nzo_encryptor.annotations" config for cannot be set to "true" without Doctrine annotations. Try running "composer require doctrine/annotations".');
+        }
+
+        if ($existDoctrineAnnotationReader) {
+            $container->getDefinition('nzo.annotation_resolver')
+                ->setArgument(1, $container->getDefinition('annotations.reader'));
+        }
     }
 }

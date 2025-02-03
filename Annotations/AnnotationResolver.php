@@ -20,10 +20,7 @@ class AnnotationResolver
     private $decryptor;
     private $reader;
 
-    /**
-     * @param Reader|null $reader
-     */
-    public function __construct(Encryptor $decryptor, $reader)
+    public function __construct(Encryptor $decryptor, ?Reader $reader = null)
     {
         $this->decryptor = $decryptor;
         $this->reader = $reader;

@@ -57,6 +57,7 @@ return [
 # config/packages/nzo_encryptor.yaml
 
 nzo_encryptor:
+    annotations: false                       # optional, if you want to disable the use of annotations (keep only PHP attributes)
     secret_key: Your_Secret_Encryption_Key   # Required, max length of 100 characters.
     secret_iv:  Your_Secret_Iv               # Required only if "random_pseudo_bytes" is FALSE. Max length of 100 characters.
     cipher_algorithm:                        # optional, default: 'aes-256-ctr'
@@ -64,6 +65,8 @@ nzo_encryptor:
     format_base64_output:                    # optional, default: TRUE, used only when 'base64_encode' is set to TRUE
     random_pseudo_bytes:                     # optional, default: TRUE (generate a random encrypted text output each time => MORE SECURE !)
 ```
+
+**!!! If you set `nzo_encryptor.annotations` to `true`, you must require `composer require doctrine/annotations` in your project.**
 
 ##### * To generate the same cypher text each time: `random_pseudo_bytes: FALSE` (Not Secure)
 ##### * To generate a different cypher text each time: `random_pseudo_bytes: TRUE` (Secure)
@@ -117,8 +120,10 @@ use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
 class MyController
 {
     /**
-    * @ParamDecryptor({"id", "foo"})   OR    #[ParamDecryptor(["id", "foo"])]
+    * @ParamDecryptor({"id", "foo"})
     */
+    // OR
+    #[ParamDecryptor(["id", "foo"])]
     public function decryptionAction($id, $foo)
     {
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
@@ -126,8 +131,10 @@ class MyController
     }
 
     /**
-    * @ParamEncryptor({"id", "foo"})   OR    #[ParamEncryptor(["id", "foo"])]
+    * @ParamEncryptor({"id", "foo"})
     */
+    // OR
+    #[ParamEncryptor(["id", "foo"])]
     public function encryptionAction($id, $foo)
     {
         // no need to use the encryption service here as the parameters are already encrypted by the annotation service.

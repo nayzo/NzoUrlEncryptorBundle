@@ -26,6 +26,9 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+                ->booleanNode('annotations')
+                    ->defaultNull()
+                ->end()
                 ->scalarNode('secret_key')
                     ->isRequired()
                     ->cannotBeEmpty()
