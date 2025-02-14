@@ -17,7 +17,7 @@ namespace Nzo\UrlEncryptorBundle\Annotations;
 #[\Attribute]
 class ParamDecryptor
 {
-    /** @var array  */
+    /** @var array */
     private $params;
 
     public function __construct(array $params = [])

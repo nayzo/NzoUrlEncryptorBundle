@@ -11,21 +11,18 @@
 
 namespace Nzo\UrlEncryptorBundle\Annotations;
 
-use Doctrine\Common\Annotations\Reader;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class AnnotationResolver
 {
-    private $decryptor;
+    private $encryptor;
     private $reader;
 
-    /**
-     * @param Reader|null $reader
-     */
-    public function __construct(Encryptor $decryptor, $reader)
+    public function __construct(Encryptor $encryptor, ?AnnotationReader $reader = null)
     {
-        $this->decryptor = $decryptor;
+        $this->encryptor = $encryptor;
         $this->reader = $reader;
     }
 
@@ -41,14 +38,16 @@ class AnnotationResolver
             return;
         }
 
-        // handle php8 attribute
+        // Handle PHP8 Attributes
         if (class_exists('ReflectionAttribute')) {
-            if ($this->hasAnnotation($method) && !$this->reader instanceof Reader) {
+            if ($this->hasAnnotation($method) && !$this->reader instanceof AnnotationReader) {
                 throw new \InvalidArgumentException('NzoEncryptor:  Annotation service not loaded, PHP Attributes should be used instead.');
             }
             $annotations = $this->getAnnotation($method);
-        } else {
+        } elseif ($this->reader instanceof AnnotationReader) { // Handle Annotation only without Attributes
             $annotations = $this->reader->getMethodAnnotations($method);
+        } else {
+            throw new \InvalidArgumentException('NzoEncryptor: Doctrine Annotation package must be installed, doctrine/annotations.');
         }
 
         foreach ($annotations as $configuration) {
@@ -62,10 +61,10 @@ class AnnotationResolver
                     $request = $event->getRequest();
                     foreach ($configuration->getParams() as $param) {
                         if ($request->attributes->has($param)) {
-                            $decrypted = $this->decryptor->encrypt($request->attributes->get($param));
+                            $decrypted = $this->encryptor->encrypt($request->attributes->get($param));
                             $request->attributes->set($param, $decrypted);
                         } elseif ($request->request->has($param)) {
-                            $decrypted = $this->decryptor->encrypt($request->request->get($param));
+                            $decrypted = $this->encryptor->encrypt($request->request->get($param));
                             $request->request->set($param, $decrypted);
                         }
                     }
@@ -75,10 +74,10 @@ class AnnotationResolver
                     $request = $event->getRequest();
                     foreach ($configuration->getParams() as $param) {
                         if ($request->attributes->has($param)) {
-                            $decrypted = $this->decryptor->decrypt($request->attributes->get($param));
+                            $decrypted = $this->encryptor->decrypt($request->attributes->get($param));
                             $request->attributes->set($param, $decrypted);
                         } elseif ($request->request->has($param)) {
-                            $decrypted = $this->decryptor->decrypt($request->request->get($param));
+                            $decrypted = $this->encryptor->decrypt($request->request->get($param));
                             $request->request->set($param, $decrypted);
                         }
                     }
@@ -87,9 +86,6 @@ class AnnotationResolver
         }
     }
 
-    /**
-     * @return mixed
-     */
     private function handleReflectionAttribute($configuration)
     {
         if ($configuration instanceof \ReflectionAttribute
@@ -109,7 +105,7 @@ class AnnotationResolver
      */
     private function getAnnotation($method)
     {
-        return $this->reader instanceof Reader && !empty($this->reader->getMethodAnnotations($method))
+        return $this->reader instanceof AnnotationReader && !empty($this->reader->getMethodAnnotations($method))
             ? $this->reader->getMethodAnnotations($method)
             : $method->getAttributes();
     }

@@ -117,8 +117,10 @@ use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
 class MyController
 {
     /**
-    * @ParamDecryptor({"id", "foo"})   OR    #[ParamDecryptor(["id", "foo"])]
+    * @ParamDecryptor({"id", "foo"})
     */
+    // OR
+    #[ParamDecryptor(["id", "foo"])]
     public function decryptionAction($id, $foo)
     {
         // no need to use the decryption service here as the parameters are already decrypted by the annotation service.
@@ -126,8 +128,10 @@ class MyController
     }
 
     /**
-    * @ParamEncryptor({"id", "foo"})   OR    #[ParamEncryptor(["id", "foo"])]
+    * @ParamEncryptor({"id", "foo"})
     */
+    // OR
+    #[ParamEncryptor(["id", "foo"])]
     public function encryptionAction($id, $foo)
     {
         // no need to use the encryption service here as the parameters are already encrypted by the annotation service.

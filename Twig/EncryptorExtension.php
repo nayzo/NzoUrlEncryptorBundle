@@ -27,22 +27,23 @@ class EncryptorExtension extends AbstractExtension
 
     public function getFilters(): array
     {
-        return array(
-            new TwigFilter('nzo_encrypt', array($this, 'encryptFilter')),
-            new TwigFilter('nzo_decrypt', array($this, 'decryptFilter')),
-        );
+        return [
+            new TwigFilter('nzo_encrypt', [$this, 'encryptFilter']),
+            new TwigFilter('nzo_decrypt', [$this, 'decryptFilter']),
+        ];
     }
 
     public function getFunctions(): array
     {
-        return array(
-            new TwigFunction('nzo_encrypt', array($this, 'encryptFunction')),
-            new TwigFunction('nzo_decrypt', array($this, 'decryptFunction')),
-        );
+        return [
+            new TwigFunction('nzo_encrypt', [$this, 'encryptFunction']),
+            new TwigFunction('nzo_decrypt', [$this, 'decryptFunction']),
+        ];
     }
 
     /**
      * @param string $key
+     *
      * @return string
      */
     public function encryptFilter($key)
@@ -52,6 +53,7 @@ class EncryptorExtension extends AbstractExtension
 
     /**
      * @param string $key
+     *
      * @return string
      */
     public function decryptFilter($key)
@@ -61,6 +63,7 @@ class EncryptorExtension extends AbstractExtension
 
     /**
      * @param string $key
+     *
      * @return string
      */
     public function encryptFunction($key)
@@ -70,6 +73,7 @@ class EncryptorExtension extends AbstractExtension
 
     /**
      * @param string $key
+     *
      * @return string
      */
     public function decryptFunction($key)

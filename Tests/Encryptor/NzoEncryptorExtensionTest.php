@@ -16,13 +16,13 @@ use PHPUnit\Framework\TestCase;
 
 class NzoEncryptorExtensionTest extends TestCase
 {
-    const CIPHER_ALGORITHM = 'aes-256-ctr';
-    const PLAIN_TEXT = 'plain_text';
-    const SECRET_KEY = 'encryptionKeyText';
-    const SECRET_IV = 'encryptionIvText';
-    const BASE64_ENCODE = true;
-    const FORMAT_BASE64_OUTPUT = true;
-    const RANDOM_PSEUDO_BYTES = false;
+    public const CIPHER_ALGORITHM = 'aes-256-ctr';
+    public const PLAIN_TEXT = 'plain_text';
+    public const SECRET_KEY = 'encryptionKeyText';
+    public const SECRET_IV = 'encryptionIvText';
+    public const BASE64_ENCODE = true;
+    public const FORMAT_BASE64_OUTPUT = true;
+    public const RANDOM_PSEUDO_BYTES = false;
 
     private $encryptor;
 
@@ -44,6 +44,6 @@ class NzoEncryptorExtensionTest extends TestCase
         $encrypted = $this->encryptor->encrypt(self::PLAIN_TEXT);
         $decrypted = $this->encryptor->decrypt($encrypted);
 
-        $this->assertEquals(self::PLAIN_TEXT, $decrypted);
+        $this->assertSame(self::PLAIN_TEXT, $decrypted);
     }
 }
