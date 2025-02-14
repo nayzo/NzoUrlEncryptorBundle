@@ -11,16 +11,28 @@
         }
     ],
     "autoload": {
-        "psr-4": { "Nzo\\UrlEncryptorBundle\\": "" }
+        "psr-4": {
+            "Nzo\\UrlEncryptorBundle\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
     },
     "require": {
         "php": ">=7.1.3",
         "ext-openssl": "*",
-        "doctrine/annotations": "^1.7|^2.0",
-        "symfony/framework-bundle": "^4.4|^5.0|^6.0|^7.0"
+        "symfony/framework-bundle": "^4.4 || ^5.0 || ^6.0 || ^7.0"
+    },
+    "suggest": {
+        "doctrine/annotations": "Required for annotation support, compatible with versions ^1.7 || ^2.0",
+        "twig/twig": "Required for twig nzo_encrypt and nzo_decrypt functions support"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.0|^8.0|^9.0"
+        "doctrine/annotations": "^1.7 || ^2.0",
+        "friendsofphp/php-cs-fixer": "^2.2 || ^3.68",
+        "rector/rector": "*",
+        "phpunit/phpunit": "^7.0 || ^8.0 || ^9.0",
+        "phpstan/phpstan": "^1.0 || ^2.0"
     },
     "config": {
         "sort-packages": true

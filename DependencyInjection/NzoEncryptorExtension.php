@@ -13,8 +13,8 @@ namespace Nzo\UrlEncryptorBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class NzoEncryptorExtension extends Extension
 {
@@ -47,7 +47,7 @@ class NzoEncryptorExtension extends Extension
 
     private function cleanKey(?string $key = null): string
     {
-        if (empty($key)) {
+        if (null === $key || '' === $key || '0' === $key) {
             return '';
         }
 
