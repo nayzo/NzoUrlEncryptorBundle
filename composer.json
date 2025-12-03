@@ -21,7 +21,7 @@
     "require": {
         "php": ">=7.1.3",
         "ext-openssl": "*",
-        "symfony/framework-bundle": "^4.4 || ^5.0 || ^6.0 || ^7.0"
+        "symfony/framework-bundle": "^4.4 || ^5.0 || ^6.0 || ^7.0 || ^8.0"
     },
     "suggest": {
         "doctrine/annotations": "Required for annotation support, compatible with versions ^1.7 || ^2.0",
