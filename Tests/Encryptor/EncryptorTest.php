@@ -468,19 +468,27 @@ class EncryptorTest extends TestCase
     }
 
     /**
-     * @dataProvider provideEmptySecretKeys
+     * @dataProvider provideInvalidSecretKeys
      */
-    public function testInvalidSecretKeyIsRefused(string $secretKey, array $previousSecretKeys): void
+    public function testInvalidSecretKeyIsRefusedOnFirstUse(string $secretKey, array $previousSecretKeys): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        // Created without the keys being known, as when a container image is built
+        $encryptor = new Encryptor($secretKey, self::CIPHER_ALGORITHM, true, true, true, $previousSecretKeys);
 
-        new Encryptor($secretKey, self::CIPHER_ALGORITHM, true, true, true, $previousSecretKeys);
+        foreach (['encrypt', 'decrypt', 'needsReencryption'] as $method) {
+            try {
+                $encryptor->{$method}(self::PLAIN_TEXT);
+                $this->fail(sprintf('%s() accepted the key.', $method));
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString('A secret key', $e->getMessage());
+            }
+        }
     }
 
-    public function provideEmptySecretKeys(): \Iterator
+    public function provideInvalidSecretKeys(): \Iterator
     {
-        yield 'current key' => ['', []];
-        yield 'previous key' => [self::SECRET_KEY, ['oldKey', '']];
+        yield 'empty key' => ['', []];
+        yield 'empty previous key' => [self::SECRET_KEY, ['oldKey', '']];
         yield 'previous key that is not a string' => [self::SECRET_KEY, [42]];
     }
 

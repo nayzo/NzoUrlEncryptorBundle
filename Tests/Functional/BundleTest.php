@@ -140,6 +140,27 @@ class BundleTest extends TestCase
         }
     }
 
+    public function testApplicationIsBuiltAndBootsWithoutTheKey(): void
+    {
+        $name = 'NZO_ENCRYPTOR_TEST_KEY_UNKNOWN_AT_BUILD_TIME';
+        $_ENV[$name] = $_SERVER[$name] = '';
+
+        try {
+            $kernel = $this->boot(['secret_key' => '%env(' . $name . ')%']);
+            $encryptor = $this->encryptor($kernel);
+
+            // A page that uses nothing of the bundle works
+            $this->assertSame(200, $kernel->handle(Request::create('/plain'))->getStatusCode());
+
+            $this->expectException(\InvalidArgumentException::class);
+            $this->expectExceptionMessage('A secret key cannot be empty');
+
+            $encryptor->encrypt(42);
+        } finally {
+            unset($_ENV[$name], $_SERVER[$name]);
+        }
+    }
+
     /**
      * @param array<string, mixed> $config
      */
