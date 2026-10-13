@@ -40,6 +40,7 @@ class Encryptor
      * @var list<string> The current key first, then the previous ones
      */
     private array $secretKeys;
+    private bool $secretKeysChecked = false;
     private string $secretIv = '';
     private ?int $ivLength = null;
 
@@ -61,18 +62,8 @@ class Encryptor
         #[\SensitiveParameter] array $previousSecretKeys = [],
         private bool $legacyDecryption = false,
     ) {
-        $this->secretKeys = [$secretKey];
-        foreach ($previousSecretKeys as $previousSecretKey) {
-            if (!\is_string($previousSecretKey)) {
-                throw new \InvalidArgumentException(sprintf('NzoEncryptor: A secret key must be a string, "%s" given.', get_debug_type($previousSecretKey)));
-            }
-
-            $this->secretKeys[] = $previousSecretKey;
-        }
-
-        if (\in_array('', $this->secretKeys, true)) {
-            throw new \InvalidArgumentException('NzoEncryptor: A secret key cannot be empty.');
-        }
+        // Checked on first use, see assertSecretKeys()
+        $this->secretKeys = [$secretKey, ...array_values($previousSecretKeys)];
     }
 
     /**
@@ -125,6 +116,8 @@ class Encryptor
      */
     public function encrypt(string|int|float|\Stringable|null $plainText, string $context = ''): string
     {
+        $this->assertSecretKeys();
+
         $plainText = (string) $plainText;
         $key = $this->key(0);
         $iv = $this->createIv($key, $plainText, $context);
@@ -148,6 +141,8 @@ class Encryptor
      */
     public function decrypt(mixed $encrypted, string $context = ''): string
     {
+        $this->assertSecretKeys();
+
         $data = $this->decode($encrypted);
         $index = $this->findKey($data, $context, $encrypted);
 
@@ -172,6 +167,8 @@ class Encryptor
      */
     public function needsReencryption(mixed $encrypted, string $context = ''): bool
     {
+        $this->assertSecretKeys();
+
         $data = $this->decode($encrypted);
         $index = $this->findKey($data, $context, $encrypted);
 
@@ -180,6 +177,29 @@ class Encryptor
         }
 
         return 0 !== $index;
+    }
+
+    /**
+     * The keys are checked on first use, not when the service is created: they are often unknown while the
+     * application is built, and the service is created there, by the cache warm-up for instance.
+     */
+    private function assertSecretKeys(): void
+    {
+        if ($this->secretKeysChecked) {
+            return;
+        }
+
+        foreach ($this->secretKeys as $secretKey) {
+            if (!\is_string($secretKey)) {
+                throw new \InvalidArgumentException(sprintf('NzoEncryptor: A secret key must be a string, "%s" given.', get_debug_type($secretKey)));
+            }
+
+            if ('' === $secretKey) {
+                throw new \InvalidArgumentException('NzoEncryptor: A secret key cannot be empty.');
+            }
+        }
+
+        $this->secretKeysChecked = true;
     }
 
     /**

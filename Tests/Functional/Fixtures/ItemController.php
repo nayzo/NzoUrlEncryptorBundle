@@ -38,6 +38,11 @@ class ItemController
         return new Response('invoice ' . $id);
     }
 
+    public function plain(): Response
+    {
+        return new Response('plain');
+    }
+
     #[ParamEncryptor(['id'])]
     public function link(string $id): Response
     {
