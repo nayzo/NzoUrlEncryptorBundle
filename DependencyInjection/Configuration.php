@@ -42,6 +42,10 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('random_pseudo_bytes')
                     ->defaultValue(true)
                 ->end()
+                ->booleanNode('query_string_params')
+                    ->info('Whether ParamEncryptor and ParamDecryptor also look for their parameters in the query string.')
+                    ->defaultValue(false)
+                ->end()
             ->end();
 
         return $treeBuilder;

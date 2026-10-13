@@ -30,4 +30,9 @@ class DummyController
     public function encryptWithAnnotation()
     {
     }
+
+    #[ParamDecryptor(params: ['id'])]
+    public function decryptWithNamedArgument()
+    {
+    }
 }

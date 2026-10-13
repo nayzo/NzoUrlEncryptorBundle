@@ -23,6 +23,7 @@ class LoadAnnotationService implements CompilerPassInterface
             ->register('nzo.annotation_resolver', AnnotationResolver::class)
             ->addArgument($container->getDefinition('nzo_encryptor'))
             ->addArgument($container->has('annotations.reader') ? $container->getDefinition('annotations.reader') : null)
+            ->addArgument('%nzo_encryptor.query_string_params%')
             ->addTag('kernel.event_listener', ['event' => 'kernel.controller', 'method' => 'onKernelController'])
         ;
     }
