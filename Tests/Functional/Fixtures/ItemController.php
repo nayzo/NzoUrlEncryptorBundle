@@ -32,6 +32,12 @@ class ItemController
         return new Response('search ' . $request->query->get('id'));
     }
 
+    #[ParamDecryptor(['id'], context: 'invoice')]
+    public function invoice(string $id): Response
+    {
+        return new Response('invoice ' . $id);
+    }
+
     #[ParamEncryptor(['id'])]
     public function link(string $id): Response
     {

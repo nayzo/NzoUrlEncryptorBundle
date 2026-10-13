@@ -63,6 +63,17 @@ class BundleTest extends TestCase
         $this->assertSame(404, $kernel->handle(Request::create('/item/42'))->getStatusCode());
     }
 
+    public function testValueOfOneRouteIsRefusedByAnotherWhenTheyHaveAContext(): void
+    {
+        $kernel = $this->boot();
+        $forItems = $this->encryptor($kernel)->encrypt(42);
+        $forInvoices = $this->encryptor($kernel)->encrypt(42, 'invoice');
+
+        $this->assertSame('invoice 42', $kernel->handle(Request::create('/invoice/' . $forInvoices))->getContent());
+        $this->assertSame(404, $kernel->handle(Request::create('/invoice/' . $forItems))->getStatusCode());
+        $this->assertSame(404, $kernel->handle(Request::create('/item/' . $forInvoices))->getStatusCode());
+    }
+
     public function testRouteParameterIsEncryptedBeforeTheControllerRuns(): void
     {
         $kernel = $this->boot();

@@ -20,18 +20,38 @@ namespace Nzo\UrlEncryptorBundle\Annotations;
 class ParamDecryptor
 {
     /**
-     * @param string[] $params
+     * @var list<string>
+     */
+    private array $params;
+
+    /**
+     * @param string[]|string $params  The names of the parameters
+     * @param string          $context The context the values are bound to, see Encryptor::encrypt()
      */
     public function __construct(
-        private array $params = [],
+        array|string $params = [],
+        private string $context = '',
     ) {
+        $params = array_values((array) $params);
+        foreach ($params as $param) {
+            if (!\is_string($param)) {
+                throw new \InvalidArgumentException(sprintf('NzoEncryptor: "%s" expects the names of the parameters, "%s" given.', self::class, get_debug_type($param)));
+            }
+        }
+
+        $this->params = $params;
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getParams(): array
     {
         return $this->params;
+    }
+
+    public function getContext(): string
+    {
+        return $this->context;
     }
 }

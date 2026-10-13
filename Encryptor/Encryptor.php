@@ -76,6 +76,39 @@ class Encryptor
     }
 
     /**
+     * The keys must never end up in a session, a cache or a queue.
+     */
+    public function __serialize(): array
+    {
+        throw new \BadMethodCallException(sprintf('NzoEncryptor: "%s" cannot be serialized.', self::class));
+    }
+
+    /**
+     * @param array<mixed> $data
+     */
+    public function __unserialize(array $data): void
+    {
+        throw new \BadMethodCallException(sprintf('NzoEncryptor: "%s" cannot be unserialized.', self::class));
+    }
+
+    /**
+     * Keeps the keys out of a dump.
+     *
+     * @return array<string, bool|int|string>
+     */
+    public function __debugInfo(): array
+    {
+        return [
+            'cipherAlgorithm' => $this->cipherAlgorithm,
+            'base64Encode' => $this->base64Encode,
+            'formatBase64Output' => $this->formatBase64Output,
+            'randomPseudoBytes' => $this->randomPseudoBytes,
+            'legacyDecryption' => $this->legacyDecryption,
+            'previousSecretKeys' => \count($this->secretKeys) - 1,
+        ];
+    }
+
+    /**
      * Only used when "random_pseudo_bytes" is disabled, to give the same output for the same input.
      */
     public function setSecretIv(#[\SensitiveParameter] ?string $secretIv): void
@@ -251,8 +284,9 @@ class Encryptor
 
         $keyLength = $this->keyLength();
 
-        // The algorithm is part of the derivation: a value is refused, not garbled, once the algorithm changes
-        $purpose = self::KEY_PURPOSE . strtolower($this->cipherAlgorithm);
+        // The algorithm is part of the derivation: a value is refused, not garbled, once the algorithm changes.
+        // Lowercased without strtolower(): before PHP 8.2 its result depends on the locale
+        $purpose = self::KEY_PURPOSE . strtr($this->cipherAlgorithm, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz');
         $secretKey = $this->secretKeys[$index];
 
         return $this->keys[$index] = new KeyMaterial(
@@ -300,7 +334,12 @@ class Encryptor
 
     private function unsupportedCipherAlgorithm(): \InvalidArgumentException
     {
-        return new \InvalidArgumentException(sprintf('NzoEncryptor: Unsupported cipher algorithm "%s".', $this->cipherAlgorithm));
+        $message = sprintf('NzoEncryptor: The cipher algorithm "%s" is not supported.', $this->cipherAlgorithm);
+        if (!\function_exists('openssl_cipher_key_length')) {
+            $message .= ' On PHP 8.1, only the AES, ARIA and Camellia algorithms are: the others need PHP 8.2 or higher.';
+        }
+
+        return new \InvalidArgumentException($message);
     }
 
     private function encode(string $data): string

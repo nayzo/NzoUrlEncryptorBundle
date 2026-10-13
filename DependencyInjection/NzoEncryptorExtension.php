@@ -15,12 +15,14 @@ namespace Nzo\UrlEncryptorBundle\DependencyInjection;
 
 use Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver;
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
+use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
 use Nzo\UrlEncryptorBundle\Exception\ExceptionInterface;
 use Nzo\UrlEncryptorBundle\Twig\EncryptorExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Twig\Extension\AbstractExtension;
 
 class NzoEncryptorExtension extends Extension
 {
@@ -57,8 +59,14 @@ class NzoEncryptorExtension extends Extension
         // A key made of digits only is read as a number from a YAML file
         $cleanKey = fn (mixed $key): string => $this->cleanKey($container, \is_scalar($key) ? (string) $key : null);
 
-        $container->setParameter('nzo_encryptor.secret_key', $cleanKey($config['secret_key']));
-        $container->setParameter('nzo_encryptor.previous_secret_keys', array_map($cleanKey, array_values($config['previous_secret_keys'])));
+        $secretKey = $cleanKey($config['secret_key']);
+        $previousSecretKeys = array_map($cleanKey, array_values($config['previous_secret_keys']));
+        if (\in_array('', [$secretKey, ...$previousSecretKeys], true)) {
+            throw new \InvalidArgumentException("NzoEncryptor: 'secret_key' and 'previous_secret_keys' cannot hold an empty key.");
+        }
+
+        $container->setParameter('nzo_encryptor.secret_key', $secretKey);
+        $container->setParameter('nzo_encryptor.previous_secret_keys', $previousSecretKeys);
         $container->setParameter('nzo_encryptor.secret_iv', $cleanKey($config['secret_iv']));
         $container->setParameter('nzo_encryptor.cipher_algorithm', $cipherAlgorithm);
         $container->setParameter('nzo_encryptor.base64_encode', $config['base64_encode']);
@@ -88,11 +96,13 @@ class NzoEncryptorExtension extends Extension
             ->addTag('kernel.event_listener', ['event' => KernelEvents::CONTROLLER, 'method' => 'onKernelController'])
         ;
 
-        $container
-            ->register('nzo.twig.encryptor_extension', EncryptorExtension::class)
-            ->setArguments([new Reference('nzo_encryptor')])
-            ->addTag('twig.extension')
-        ;
+        if (class_exists(AbstractExtension::class)) {
+            $container
+                ->register('nzo.twig.encryptor_extension', EncryptorExtension::class)
+                ->setArguments([new Reference('nzo_encryptor')])
+                ->addTag('twig.extension')
+            ;
+        }
     }
 
     /**
@@ -105,11 +115,12 @@ class NzoEncryptorExtension extends Extension
         try {
             foreach (['', 'a', str_repeat('a', 40)] as $plainText) {
                 // AEAD modes raise a warning on top of failing: the exception below says it better
-                if ($plainText !== $encryptor->decrypt(@$encryptor->encrypt($plainText))) {
-                    throw new \InvalidArgumentException('The value read back is not the one that was encrypted.');
+                $readBack = $encryptor->decrypt(@$encryptor->encrypt($plainText));
+                if ($plainText !== $readBack) {
+                    throw new DecryptionException();
                 }
             }
-        } catch (ExceptionInterface|\InvalidArgumentException $e) {
+        } catch (ExceptionInterface $e) {
             throw new \InvalidArgumentException(sprintf('NzoEncryptor: The cipher algorithm "%s" is not supported. Use one that only needs a key and an IV, such as "aes-256-ctr" or "aes-256-cbc". The AEAD modes (GCM, CCM, OCB, ChaCha20-Poly1305) are not: the bundle already authenticates every value.', $cipherAlgorithm), 0, $e);
         }
     }

@@ -43,13 +43,13 @@ class AnnotationResolver
 
         foreach ($decryptors as $decryptor) {
             if ($decryptor instanceof ParamDecryptor) {
-                $this->transformParams($request, $decryptor->getParams(), false);
+                $this->transformParams($request, $decryptor->getParams(), $decryptor->getContext(), false);
             }
         }
 
         foreach ($encryptors as $encryptor) {
             if ($encryptor instanceof ParamEncryptor) {
-                $this->transformParams($request, $encryptor->getParams(), true);
+                $this->transformParams($request, $encryptor->getParams(), $encryptor->getContext(), true);
             }
         }
     }
@@ -60,7 +60,7 @@ class AnnotationResolver
      *
      * @param string[] $params
      */
-    private function transformParams(Request $request, array $params, bool $encrypt): void
+    private function transformParams(Request $request, array $params, string $context, bool $encrypt): void
     {
         $bags = [$request->attributes, $request->request];
         if ($this->queryStringParams) {
@@ -76,7 +76,7 @@ class AnnotationResolver
                 $value = $bag->get($param);
                 // Nothing to transform: an optional parameter that was left out, or an empty one
                 if (null !== $value && '' !== $value) {
-                    $bag->set($param, $encrypt ? $this->encrypt($param, $value) : $this->decrypt($value));
+                    $bag->set($param, $encrypt ? $this->encrypt($param, $value, $context) : $this->decrypt($value, $context));
                 }
 
                 break;
@@ -84,19 +84,19 @@ class AnnotationResolver
         }
     }
 
-    private function encrypt(string $param, mixed $value): string
+    private function encrypt(string $param, mixed $value, string $context): string
     {
         if (!\is_scalar($value) && !$value instanceof \Stringable) {
             throw new \UnexpectedValueException(sprintf('NzoEncryptor: The parameter "%s" cannot be encrypted, a scalar is expected, "%s" given.', $param, get_debug_type($value)));
         }
 
-        return $this->encryptor->encrypt((string) $value);
+        return $this->encryptor->encrypt((string) $value, $context);
     }
 
-    private function decrypt(mixed $value): string
+    private function decrypt(mixed $value, string $context): string
     {
         try {
-            return $this->encryptor->decrypt($value);
+            return $this->encryptor->decrypt($value, $context);
         } catch (DecryptionException $e) {
             // A value that was modified, or made up, designates nothing
             throw new NotFoundHttpException('Not Found', $e);
@@ -109,10 +109,13 @@ class AnnotationResolver
      */
     private function assertNoDocBlockAnnotation(ControllerEvent $event): void
     {
-        $docComment = $event->getControllerReflector()->getDocComment();
+        $reflector = $event->getControllerReflector();
+        $docComment = $reflector->getDocComment();
 
         if (false !== $docComment && (str_contains($docComment, '@ParamEncryptor') || str_contains($docComment, '@ParamDecryptor'))) {
-            throw new \LogicException(sprintf('NzoEncryptor: The annotations found on "%s()" are no longer supported, use the PHP attributes #[ParamEncryptor] and #[ParamDecryptor] instead.', $event->getControllerReflector()->getName()));
+            $name = $reflector instanceof \ReflectionMethod ? $reflector->class . '::' . $reflector->name : $reflector->name;
+
+            throw new \LogicException(sprintf('NzoEncryptor: The annotations found on "%s()" are no longer supported, use the PHP attributes #[ParamEncryptor] and #[ParamDecryptor] instead.', $name));
         }
     }
 }

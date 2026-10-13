@@ -97,7 +97,7 @@ class InvoiceController
 }
 ```
 
-`#[ParamEncryptor(['id'])]` does the opposite: the action receives the encrypted value.
+`#[ParamEncryptor(['id'])]` does the opposite: the action receives the encrypted value. For a single parameter, `#[ParamDecryptor('id')]` is enough.
 
 Each parameter is looked up in the route parameters first, then in the request body. To also look in the query string (`?id=...`), enable `query_string_params`.
 
@@ -133,9 +133,26 @@ class InvoiceLinks
 Going further
 -------------
 
-### Bind a value to its owner
+### Keep a link from being reused elsewhere
 
-Pass a second argument, the context, to tie an encrypted value to something: a user, a tenant, a purpose. The same context is required to decrypt it.
+By default, the encrypted form of `42` is accepted by every action that decrypts an `id`: a link to invoice 42 also opens order 42.
+
+Give each kind of link a context, any name you like, and use the same one on both sides:
+
+```twig
+<a href="{{ path('invoice_show', {id: invoice.id | nzo_encrypt('invoice')}) }}">My invoice</a>
+```
+
+```php
+#[ParamDecryptor(['id'], context: 'invoice')]
+public function show(string $id): Response
+```
+
+A value encrypted for another context, or for none, gives a 404.
+
+### Bind a stored value to its owner
+
+The context is also the second argument of the service. Use it to tie a value to a user, a tenant or a record:
 
 ```php
 $encrypted = $this->encryptor->encrypt($apiToken, 'user-' . $user->getId());
@@ -145,8 +162,6 @@ $this->encryptor->decrypt($encrypted, 'user-' . $other->getId()); // DecryptionE
 ```
 
 A value copied from one user to another is refused. The context is not secret and is not stored in the encrypted value.
-
-In Twig: `{{ value | nzo_encrypt('invoice') }}`.
 
 ### Get the same output every time
 
@@ -214,6 +229,7 @@ How it is protected
 - Each value is encrypted with a new random IV (unless you asked for a stable output), then signed with HMAC-SHA256 (encrypt-then-MAC). The signature is checked before anything is decrypted.
 - The encryption key and the signing key are two different keys, both derived from your `secret_key` with HKDF.
 - A value encrypted with one algorithm, one key or one context is never accepted with another.
+- The service cannot be serialized and hides its keys from a dump, so they do not leak into a session, a cache or a log.
 
 The security of all this is the security of your key. Use a random one, as shown in the installation.
 

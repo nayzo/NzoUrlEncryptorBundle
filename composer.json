@@ -49,5 +49,10 @@
     },
     "config": {
         "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "7.0-dev"
+        }
     }
 }

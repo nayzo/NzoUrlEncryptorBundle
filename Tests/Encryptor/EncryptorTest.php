@@ -105,6 +105,42 @@ class EncryptorTest extends TestCase
         yield ['AES-256-CBC'];
     }
 
+    public function testCaseOfTheCipherAlgorithmDoesNotMatter(): void
+    {
+        $encrypted = (new Encryptor(self::SECRET_KEY, 'AES-256-CTR'))->encrypt(self::PLAIN_TEXT);
+
+        $this->assertSame(self::PLAIN_TEXT, (new Encryptor(self::SECRET_KEY, 'aes-256-ctr'))->decrypt($encrypted));
+    }
+
+    public function testEncryptorCannotBeSerialized(): void
+    {
+        $this->expectException(\BadMethodCallException::class);
+
+        serialize($this->createEncryptor());
+    }
+
+    public function testEncryptorCannotBeUnserialized(): void
+    {
+        $this->expectException(\BadMethodCallException::class);
+
+        unserialize(sprintf('O:%d:"%s":0:{}', \strlen(Encryptor::class), Encryptor::class));
+    }
+
+    public function testDumpDoesNotShowTheKeys(): void
+    {
+        $encryptor = new Encryptor(self::SECRET_KEY, self::CIPHER_ALGORITHM, true, true, false, ['previousKeyText']);
+        $encryptor->setSecretIv(self::SECRET_IV);
+        $encryptor->encrypt(self::PLAIN_TEXT);
+
+        $dump = print_r($encryptor, true);
+
+        $this->assertStringContainsString(self::CIPHER_ALGORITHM, $dump);
+        $this->assertStringNotContainsString(self::SECRET_KEY, $dump);
+        $this->assertStringNotContainsString('previousKeyText', $dump);
+        $this->assertStringNotContainsString(self::SECRET_IV, $dump);
+        $this->assertStringNotContainsString('KeyMaterial', $dump);
+    }
+
     public function testRandomModeGivesADifferentOutputForEveryEncryption(): void
     {
         $encryptor = $this->createEncryptor();

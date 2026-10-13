@@ -49,6 +49,7 @@ class AnnotationResolverTest extends TestCase
     {
         yield 'positional argument' => ['decrypt'];
         yield 'named argument' => ['decryptWithNamedArgument'];
+        yield 'single name' => ['decryptWithASingleName'];
         yield 'repeated attribute' => ['decryptWithRepeatedAttribute'];
     }
 
@@ -62,6 +63,54 @@ class AnnotationResolverTest extends TestCase
 
         $this->assertSame('some_data', $request->attributes->get('id'));
         $this->assertSame('some_token', $request->attributes->get('token'));
+    }
+
+    public function testValueIsDecryptedWithTheContextOfTheAttribute(): void
+    {
+        $request = Request::create('/');
+        $request->attributes->set('id', $this->encryptor->encrypt('some_data', 'invoice'));
+
+        $this->resolve($request, 'decryptWithContext');
+
+        $this->assertSame('some_data', $request->attributes->get('id'));
+    }
+
+    /**
+     * @dataProvider provideActionsAndContextsThatDoNotMatch
+     */
+    public function testValueEncryptedWithAnotherContextGivesANotFoundResponse(string $action, string $context): void
+    {
+        $request = Request::create('/');
+        $request->attributes->set('id', $this->encryptor->encrypt('some_data', $context));
+
+        $this->expectException(NotFoundHttpException::class);
+
+        $this->resolve($request, $action);
+    }
+
+    public function provideActionsAndContextsThatDoNotMatch(): \Iterator
+    {
+        yield 'value without context' => ['decryptWithContext', ''];
+        yield 'value of another context' => ['decryptWithContext', 'user'];
+        yield 'action without context' => ['decrypt', 'invoice'];
+    }
+
+    public function testValueIsEncryptedWithTheContextOfTheAttribute(): void
+    {
+        $request = Request::create('/');
+        $request->attributes->set('id', 'some_data');
+
+        $this->resolve($request, 'encryptWithContext');
+
+        $this->assertSame('some_data', $this->encryptor->decrypt($request->attributes->get('id'), 'invoice'));
+    }
+
+    public function testAttributeRefusesWhatIsNotAParameterName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('expects the names of the parameters');
+
+        new ParamDecryptor(['id', 42]);
     }
 
     public function testInvokableControllerIsSupported(): void
@@ -241,7 +290,7 @@ class AnnotationResolverTest extends TestCase
     public function testDocBlockAnnotationIsRefused(): void
     {
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('use the PHP attributes');
+        $this->expectExceptionMessage(DummyController::class . '::decryptWithDocBlockAnnotation()');
 
         $this->resolve(Request::create('/'), 'decryptWithDocBlockAnnotation');
     }

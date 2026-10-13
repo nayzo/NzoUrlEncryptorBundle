@@ -123,6 +123,26 @@ class NzoEncryptorExtensionConfigurationTest extends TestCase
         $this->load([]);
     }
 
+    /**
+     * @dataProvider provideKeysThatAreEmptyOnceCleaned
+     *
+     * @param array<string, mixed> $config
+     */
+    public function testKeyThatIsEmptyOnceCleanedIsRefused(array $config): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('cannot hold an empty key');
+
+        $this->load($config);
+    }
+
+    public function provideKeysThatAreEmptyOnceCleaned(): \Iterator
+    {
+        yield 'spaces' => [['secret_key' => '   ']];
+        yield 'zero' => [['secret_key' => '0']];
+        yield 'previous key' => [['secret_key' => 'encryptionKeyText', 'previous_secret_keys' => ['   ']]];
+    }
+
     public function testPreviousSecretKeyCannotBeEmpty(): void
     {
         $this->expectException(InvalidConfigurationException::class);

@@ -93,7 +93,8 @@ The algorithm is checked when the container is built. The ones that cannot encry
 - `Encryptor::encrypt()` and `Encryptor::decrypt()` take a second, optional argument, and have native types.
 - `Encryptor::__construct()` takes two more optional arguments: the previous keys and the legacy flag. The first five are unchanged.
 - `AnnotationResolver::__construct()` no longer takes the annotation reader: `(Encryptor $encryptor, bool $queryStringParams = false)`.
-- `ParamEncryptor` and `ParamDecryptor` can only be put on a method or a function.
+- `ParamEncryptor` and `ParamDecryptor` can only be put on a method or a function. They refuse anything that is not a parameter name.
+- `Encryptor` can no longer be serialized: it holds the keys.
 - `DependencyInjection\Compiler\LoadAnnotationService` and `Resources/config/services.yaml` are removed. The service names have not changed: `nzo_encryptor`, `nzo.annotation_resolver`, `nzo.twig.encryptor_extension`.
 
 What you gain
@@ -101,5 +102,5 @@ What you gain
 
 - Modified values are refused.
 - `previous_secret_keys`: change your key without breaking the existing values.
-- A context, to bind a value to its owner.
+- A context, to bind a value to its owner, or a link to its page: `#[ParamDecryptor(['id'], context: 'invoice')]`.
 - Keys read from the environment are used as they are, whatever their length.

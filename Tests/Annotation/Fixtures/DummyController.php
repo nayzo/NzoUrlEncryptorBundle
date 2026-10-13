@@ -39,8 +39,23 @@ class DummyController
     {
     }
 
+    #[ParamDecryptor('id')]
+    public function decryptWithASingleName(): void
+    {
+    }
+
+    #[ParamDecryptor(['id'], context: 'invoice')]
+    public function decryptWithContext(): void
+    {
+    }
+
     #[ParamEncryptor(['id'])]
     public function encrypt(): void
+    {
+    }
+
+    #[ParamEncryptor(['id'], context: 'invoice')]
+    public function encryptWithContext(): void
     {
     }
 
