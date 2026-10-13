@@ -6,7 +6,7 @@ The version 7 signs every encrypted value. A value that was modified is now refu
 Requirements
 ------------
 
-- PHP 8.2 or higher
+- PHP 8.1 or higher
 - Symfony 6.4, 7 or 8
 
 If you cannot meet them, stay on the version 6: `composer require nzo/url-encryptor-bundle:^6.6`.

@@ -5,6 +5,17 @@ on:
     push:
         branches:
             - master
+            - "[0-9]+.x"
+    # A new release of Symfony or PHP can break the bundle without any commit here
+    schedule:
+        - cron: "0 6 * * 1"
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
     tests:
@@ -14,9 +25,11 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - php-version: "8.2"
+                    - php-version: "8.1"
                       symfony-version: "6.4.*"
                       dependencies: lowest
+                    - php-version: "8.1"
+                      symfony-version: "6.4.*"
                     - php-version: "8.2"
                       symfony-version: "6.4.*"
                     - php-version: "8.2"
@@ -43,6 +56,17 @@ jobs:
                   coverage: none
                   tools: flex
 
+            - name: Get the Composer cache directory
+              id: composer-cache
+              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+            - name: Cache the Composer packages
+              uses: actions/cache@v4
+              with:
+                  path: ${{ steps.composer-cache.outputs.dir }}
+                  key: composer-${{ matrix.php-version }}-${{ matrix.symfony-version }}-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}
+                  restore-keys: composer-${{ matrix.php-version }}-
+
             - name: Install dependencies
               env:
                   SYMFONY_REQUIRE: ${{ matrix.symfony-version }}
@@ -64,6 +88,9 @@ jobs:
               with:
                   php-version: "8.2"
                   coverage: none
+
+            - name: Validate composer.json
+              run: composer validate --strict
 
             - name: Install dependencies
               run: composer update --no-interaction --no-progress

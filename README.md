@@ -16,8 +16,8 @@ Which version do I need?
 
 | Your application | Bundle version | Install |
 |---|---|---|
-| Symfony 6.4, 7 or 8, with PHP 8.2 or higher | **7** | `composer require nzo/url-encryptor-bundle` |
-| Symfony 4.4 to 6.3, or PHP lower than 8.2 | **6** | `composer require nzo/url-encryptor-bundle:^6.6` |
+| Symfony 6.4, 7 or 8 | **7** | `composer require nzo/url-encryptor-bundle` |
+| Symfony 4.4 to 6.3 | **6** | `composer require nzo/url-encryptor-bundle:^6.6` |
 
 The documentation of the version 6 is [here](https://github.com/nayzo/NzoUrlEncryptorBundle/tree/v6.6.0#readme).
 
@@ -205,6 +205,8 @@ nzo_encryptor:
 A key or an IV written in the configuration file is limited to 100 characters. Read from the environment, it has no limit.
 
 `cipher_algorithm` accepts the OpenSSL algorithms that work with a key and an IV, such as `aes-256-ctr` or `aes-256-cbc`. GCM, CCM, OCB and ChaCha20-Poly1305 are refused: the bundle already authenticates every value, whatever the algorithm. Changing the algorithm makes the existing values unreadable.
+
+On PHP 8.1, only the AES, ARIA and Camellia algorithms are available.
 
 How it is protected
 -------------------

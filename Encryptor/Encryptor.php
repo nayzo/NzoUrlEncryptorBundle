@@ -33,6 +33,8 @@ class Encryptor
     private const TAG_LENGTH = 16;
     private const SUBKEY_LENGTH = 32;
     private const KEY_PURPOSE = 'nzo-url-encryptor/v1/';
+    // The algorithms whose name gives the key length in bits. XTS and SIV are left out: they take two keys
+    private const KEY_LENGTH_PATTERN = '/^(?:aes|aria|camellia)-?(128|192|256)(?!.*(?:xts|siv))/i';
 
     /**
      * @var list<string> The current key first, then the previous ones
@@ -247,10 +249,7 @@ class Encryptor
             return $this->keys[$index];
         }
 
-        $keyLength = openssl_cipher_key_length($this->cipherAlgorithm);
-        if (false === $keyLength || $keyLength < 1) {
-            throw $this->unsupportedCipherAlgorithm();
-        }
+        $keyLength = $this->keyLength();
 
         // The algorithm is part of the derivation: a value is refused, not garbled, once the algorithm changes
         $purpose = self::KEY_PURPOSE . strtolower($this->cipherAlgorithm);
@@ -261,6 +260,28 @@ class Encryptor
             hash_hkdf(self::HASH_ALGORITHM, $secretKey, self::SUBKEY_LENGTH, $purpose . '/authentication'),
             hash_hkdf(self::HASH_ALGORITHM, $secretKey, self::SUBKEY_LENGTH, $purpose . '/iv')
         );
+    }
+
+    /**
+     * @return int<1, max>
+     */
+    private function keyLength(): int
+    {
+        // PHP 8.1 cannot ask OpenSSL: the length is read from the name of the algorithm
+        $keyLength = \function_exists('openssl_cipher_key_length')
+            ? openssl_cipher_key_length($this->cipherAlgorithm)
+            : self::keyLengthFromName($this->cipherAlgorithm);
+
+        if (!\is_int($keyLength) || $keyLength < 1) {
+            throw $this->unsupportedCipherAlgorithm();
+        }
+
+        return $keyLength;
+    }
+
+    private static function keyLengthFromName(string $cipherAlgorithm): ?int
+    {
+        return 1 === preg_match(self::KEY_LENGTH_PATTERN, $cipherAlgorithm, $matches) ? intdiv((int) $matches[1], 8) : null;
     }
 
     private function ivLength(): int

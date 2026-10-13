@@ -383,6 +383,35 @@ class EncryptorTest extends TestCase
         $this->assertIsRefused($encryptor, 'abc');
     }
 
+    public function testKeyLengthReadFromTheNameIsTheOneOfOpenSsl(): void
+    {
+        if (!\function_exists('openssl_cipher_key_length')) {
+            $this->markTestSkipped('PHP 8.2 is needed to ask OpenSSL.');
+        }
+
+        $keyLengthFromName = new \ReflectionMethod(Encryptor::class, 'keyLengthFromName');
+
+        $checked = 0;
+        foreach (openssl_get_cipher_methods(true) as $cipherAlgorithm) {
+            $keyLength = $keyLengthFromName->invoke(null, $cipherAlgorithm);
+            // Some listed algorithms cannot be loaded: PHP knows nothing about them, and the bundle refuses them
+            $expected = @openssl_cipher_key_length($cipherAlgorithm);
+            if (null === $keyLength || false === $expected) {
+                continue;
+            }
+
+            $this->assertSame($expected, $keyLength, $cipherAlgorithm);
+            ++$checked;
+        }
+
+        $this->assertGreaterThan(20, $checked);
+        $this->assertSame(32, $keyLengthFromName->invoke(null, 'aes-256-ctr'));
+        $this->assertSame(16, $keyLengthFromName->invoke(null, 'AES-128-CBC'));
+        $this->assertNull($keyLengthFromName->invoke(null, 'des-ede3-cbc'));
+        $this->assertNull($keyLengthFromName->invoke(null, 'aes-256-xts'));
+        $this->assertNull($keyLengthFromName->invoke(null, 'aes-256-siv'));
+    }
+
     /**
      * @dataProvider provideUnsupportedCipherAlgorithms
      */
