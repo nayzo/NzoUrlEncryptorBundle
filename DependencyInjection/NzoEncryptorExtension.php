@@ -43,6 +43,7 @@ class NzoEncryptorExtension extends Extension
         $container->setParameter('nzo_encryptor.base64_encode', (bool) $config['base64_encode']);
         $container->setParameter('nzo_encryptor.format_base64_output', (bool) $config['format_base64_output']);
         $container->setParameter('nzo_encryptor.random_pseudo_bytes', (bool) $config['random_pseudo_bytes']);
+        $container->setParameter('nzo_encryptor.query_string_params', (bool) $config['query_string_params']);
     }
 
     private function cleanKey(?string $key = null): string

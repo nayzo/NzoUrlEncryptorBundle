@@ -13,17 +13,20 @@ namespace Nzo\UrlEncryptorBundle\Annotations;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 
 class AnnotationResolver
 {
     private $encryptor;
     private $reader;
+    private $queryStringParams;
 
-    public function __construct(Encryptor $encryptor, ?AnnotationReader $reader = null)
+    public function __construct(Encryptor $encryptor, ?AnnotationReader $reader = null, bool $queryStringParams = false)
     {
         $this->encryptor = $encryptor;
         $this->reader = $reader;
+        $this->queryStringParams = $queryStringParams;
     }
 
     public function onKernelController(ControllerEvent $event)
@@ -57,31 +60,36 @@ class AnnotationResolver
             }
 
             if ($configuration instanceof ParamEncryptor) {
-                if (null !== $configuration->getParams()) {
-                    $request = $event->getRequest();
-                    foreach ($configuration->getParams() as $param) {
-                        if ($request->attributes->has($param)) {
-                            $decrypted = $this->encryptor->encrypt($request->attributes->get($param));
-                            $request->attributes->set($param, $decrypted);
-                        } elseif ($request->request->has($param)) {
-                            $decrypted = $this->encryptor->encrypt($request->request->get($param));
-                            $request->request->set($param, $decrypted);
-                        }
-                    }
-                }
+                $this->transformParams($event->getRequest(), $configuration->getParams(), true);
             } elseif ($configuration instanceof ParamDecryptor) {
-                if (null !== $configuration->getParams()) {
-                    $request = $event->getRequest();
-                    foreach ($configuration->getParams() as $param) {
-                        if ($request->attributes->has($param)) {
-                            $decrypted = $this->encryptor->decrypt($request->attributes->get($param));
-                            $request->attributes->set($param, $decrypted);
-                        } elseif ($request->request->has($param)) {
-                            $decrypted = $this->encryptor->decrypt($request->request->get($param));
-                            $request->request->set($param, $decrypted);
-                        }
-                    }
+                $this->transformParams($event->getRequest(), $configuration->getParams(), false);
+            }
+        }
+    }
+
+    /**
+     * Each parameter is looked up in the route parameters, then in the request body and, when the
+     * "query_string_params" option is enabled, in the query string. Only the first one found is transformed.
+     *
+     * @param string[] $params
+     */
+    private function transformParams(Request $request, array $params, bool $encrypt): void
+    {
+        $bags = [$request->attributes, $request->request];
+        if ($this->queryStringParams) {
+            $bags[] = $request->query;
+        }
+
+        foreach ($params as $param) {
+            foreach ($bags as $bag) {
+                if (!$bag->has($param)) {
+                    continue;
                 }
+
+                $value = $bag->get($param);
+                $bag->set($param, $encrypt ? $this->encryptor->encrypt($value) : $this->encryptor->decrypt($value));
+
+                break;
             }
         }
     }
@@ -92,7 +100,9 @@ class AnnotationResolver
             && \in_array($configuration->getName(), [ParamEncryptor::class, ParamDecryptor::class], true)) {
             $class = $configuration->getName();
             $arguments = $configuration->getArguments();
-            $params = \is_array($arguments) && [] !== $arguments && \is_array($arguments[0]) ? $arguments[0] : [];
+            // First positional argument, or the same one passed by name: #[ParamDecryptor(params: ['id'])]
+            $params = $arguments[0] ?? $arguments['params'] ?? [];
+            $params = \is_array($params) ? $params : [];
 
             return new $class($params);
         }

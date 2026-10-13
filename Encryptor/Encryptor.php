@@ -20,7 +20,7 @@ class Encryptor
     private $base64Encode;
     private $formatBase64Output;
     private $randomPseudoBytes;
-    private $iv;
+    private $secretIv = '';
 
     public function __construct(
         string $secretKey,
@@ -41,14 +41,7 @@ class Encryptor
      */
     public function setSecretIv($secretIv)
     {
-        $ivLength = openssl_cipher_iv_length($this->cipherAlgorithm);
-        $secretIv = $this->randomPseudoBytes ? openssl_random_pseudo_bytes($ivLength) : $secretIv;
-
-        $this->iv = substr(
-            hash_hmac(self::HASH_ALGORITHM, $secretIv, $this->secretKey, true),
-            0,
-            $ivLength
-        );
+        $this->secretIv = (string) $secretIv;
     }
 
     /**
@@ -58,8 +51,9 @@ class Encryptor
      */
     public function encrypt($plainText)
     {
-        $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, OPENSSL_RAW_DATA, $this->iv);
-        $encrypted = $this->iv . $encrypted;
+        $iv = $this->createIv();
+        $encrypted = openssl_encrypt($plainText, $this->cipherAlgorithm, $this->secretKey, OPENSSL_RAW_DATA, $iv);
+        $encrypted = $iv . $encrypted;
 
         return $this->base64Encode ? $this->base64Encode($encrypted) : $encrypted;
     }
@@ -85,6 +79,25 @@ class Encryptor
         );
 
         return trim($decrypted);
+    }
+
+    /**
+     * A new IV for every encryption when "random_pseudo_bytes" is enabled: the service can live for many
+     * requests (workers, consumers), and an IV must never encrypt two values.
+     * Otherwise the IV derived from "secret_iv", which gives the same output for the same input.
+     *
+     * @return string
+     */
+    private function createIv()
+    {
+        $ivLength = openssl_cipher_iv_length($this->cipherAlgorithm);
+        if (false === $ivLength || 0 === $ivLength) {
+            return '';
+        }
+
+        $seed = $this->randomPseudoBytes ? random_bytes($ivLength) : $this->secretIv;
+
+        return substr(hash_hmac(self::HASH_ALGORITHM, $seed, $this->secretKey, true), 0, $ivLength);
     }
 
     /**

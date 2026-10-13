@@ -62,7 +62,8 @@ nzo_encryptor:
     cipher_algorithm:                        # optional, default: 'aes-256-ctr'
     base64_encode:                           # optional, default: TRUE
     format_base64_output:                    # optional, default: TRUE, used only when 'base64_encode' is set to TRUE
-    random_pseudo_bytes:                     # optional, default: TRUE (generate a random encrypted text output each time => MORE SECURE !)
+    random_pseudo_bytes:                     # optional, default: TRUE (a new random IV for every encryption, so a different output each time => MORE SECURE !)
+    query_string_params:                     # optional, default: FALSE, set it to TRUE to let ParamEncryptor / ParamDecryptor also handle the query string parameters
 ```
 
 ##### * To generate the same cypher text each time: `random_pseudo_bytes: FALSE` (Not Secure)
@@ -109,6 +110,8 @@ Use the twig extensions filters or functions to ``encrypt`` or ``decrypt`` your 
 #### In the controller with annotation service:
 
 Use the annotation service to ``decrypt`` / ``encrypt`` automatically any parameter you want, by using the ``ParamDecryptor`` / ``ParamEncryptor`` annotation service and specifying in it all the parameters to be decrypted/encrypted.
+
+Each parameter is looked up in the route parameters first, then in the request body. Set ``query_string_params: true`` to also look for it in the query string (``?id=...``). Only the first place the parameter is found in is decrypted/encrypted.
 
 ```php
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
