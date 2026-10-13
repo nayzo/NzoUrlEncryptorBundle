@@ -19,7 +19,7 @@ Which version do I need?
 | Symfony 6.4, 7 or 8 | **7** | `composer require nzo/url-encryptor-bundle` |
 | Symfony 4.4 to 6.3 | **6** | `composer require nzo/url-encryptor-bundle:^6.6` |
 
-The documentation of the version 6 is [here](https://github.com/nayzo/NzoUrlEncryptorBundle/tree/v6.6.0#readme).
+The documentation of the version 6 is [on the 6.x branch](https://github.com/nayzo/NzoUrlEncryptorBundle/tree/6.x#readme).
 
 Coming from the version 6? Read [UPGRADE-7.0.md](UPGRADE-7.0.md) first: the encrypted values have a new format.
 
