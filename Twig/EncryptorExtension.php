@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Nzo\UrlEncryptorBundle\Twig;
 
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
@@ -18,11 +20,9 @@ use Twig\TwigFunction;
 
 class EncryptorExtension extends AbstractExtension
 {
-    private $encryptor;
-
-    public function __construct(Encryptor $encryptor)
-    {
-        $this->encryptor = $encryptor;
+    public function __construct(
+        private Encryptor $encryptor,
+    ) {
     }
 
     public function getFilters(): array
@@ -41,43 +41,23 @@ class EncryptorExtension extends AbstractExtension
         ];
     }
 
-    /**
-     * @param string $key
-     *
-     * @return string
-     */
-    public function encryptFilter($key)
+    public function encryptFilter(string|int|float|\Stringable|null $key, string $context = ''): string
     {
-        return $this->encryptor->encrypt($key);
+        return $this->encryptor->encrypt($key, $context);
     }
 
-    /**
-     * @param string $key
-     *
-     * @return string
-     */
-    public function decryptFilter($key)
+    public function decryptFilter(mixed $key, string $context = ''): string
     {
-        return $this->encryptor->decrypt($key);
+        return $this->encryptor->decrypt($key, $context);
     }
 
-    /**
-     * @param string $key
-     *
-     * @return string
-     */
-    public function encryptFunction($key)
+    public function encryptFunction(string|int|float|\Stringable|null $key, string $context = ''): string
     {
-        return $this->encryptor->encrypt($key);
+        return $this->encryptor->encrypt($key, $context);
     }
 
-    /**
-     * @param string $key
-     *
-     * @return string
-     */
-    public function decryptFunction($key)
+    public function decryptFunction(mixed $key, string $context = ''): string
     {
-        return $this->encryptor->decrypt($key);
+        return $this->encryptor->decrypt($key, $context);
     }
 }

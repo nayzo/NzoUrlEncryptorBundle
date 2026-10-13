@@ -9,28 +9,49 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Nzo\UrlEncryptorBundle\Annotations;
 
 /**
- * @Annotation
+ * Lists the request parameters of a controller action that must be decrypted before the action runs.
  */
-#[\Attribute]
+#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_FUNCTION | \Attribute::IS_REPEATABLE)]
 class ParamDecryptor
 {
-    /** @var array */
-    private $params;
+    /**
+     * @var list<string>
+     */
+    private array $params;
 
-    public function __construct(array $params = [])
-    {
+    /**
+     * @param string[]|string $params  The names of the parameters
+     * @param string          $context The context the values are bound to, see Encryptor::encrypt()
+     */
+    public function __construct(
+        array|string $params = [],
+        private string $context = '',
+    ) {
+        $params = array_values((array) $params);
+        foreach ($params as $param) {
+            if (!\is_string($param)) {
+                throw new \InvalidArgumentException(sprintf('NzoEncryptor: "%s" expects the names of the parameters, "%s" given.', self::class, get_debug_type($param)));
+            }
+        }
+
         $this->params = $params;
     }
 
+    /**
+     * @return list<string>
+     */
     public function getParams(): array
     {
-        if (isset($this->params['value']) && \is_array($this->params['value'])) {
-            return $this->params['value'];
-        }
-
         return $this->params;
+    }
+
+    public function getContext(): string
+    {
+        return $this->context;
     }
 }
