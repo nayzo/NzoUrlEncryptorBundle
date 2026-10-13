@@ -9,9 +9,13 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Nzo\UrlEncryptorBundle\Tests\Encryptor;
 
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
+use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
+use Nzo\UrlEncryptorBundle\Exception\EncryptionException;
 use PHPUnit\Framework\TestCase;
 
 class EncryptorTest extends TestCase
@@ -21,13 +25,89 @@ class EncryptorTest extends TestCase
     private const SECRET_IV = 'encryptionIvText';
     private const PLAIN_TEXT = 'plain_text';
 
+    // Layout of an encrypted value: version (1 byte), IV (16 bytes with AES), cipher text, tag (16 bytes)
+    private const IV_OFFSET = 1;
+    private const IV_LENGTH = 16;
+
+    // Deterministic outputs for PLAIN_TEXT with the key and the IV above: they must never change
+    private const DETERMINISTIC_OUTPUT = 'ARr_qxYPpKBf4rteov0UL7bQ-fomehcSgJKT6TB7CBU8AuNbhJotCZ52Ag';
+    private const DETERMINISTIC_OUTPUT_WITH_CONTEXT = 'AV5AI-30JmEnvVhSnPO3woYuv0Fk_Z60Rmd4g1THkqKc6FteG1t7VZnDWQ';
+
     // Outputs of the version 6.5.0 for PLAIN_TEXT, with the key and the IV above
     private const DETERMINISTIC_OUTPUT_OF_6_5 = '2M1MYc5Kxj850Z8zTndblfsbYf9p15-mVj0';
     private const RANDOM_OUTPUT_OF_6_5 = 'mX_zY5loFSGtK-FUhPZDsy2nuPOGbhD1MDE';
 
+    /**
+     * @dataProvider providePlainTexts
+     */
+    public function testValueIsReadBackExactlyAsItWasEncrypted(string $plainText): void
+    {
+        foreach ([true, false] as $randomPseudoBytes) {
+            $encryptor = $this->createEncryptor($randomPseudoBytes);
+
+            $this->assertSame($plainText, $encryptor->decrypt($encryptor->encrypt($plainText)));
+        }
+    }
+
+    public function providePlainTexts(): \Iterator
+    {
+        yield 'text' => [self::PLAIN_TEXT];
+        yield 'empty' => [''];
+        yield 'one character' => ['1'];
+        yield 'surrounding spaces' => ["  spaced \n"];
+        yield 'multibyte' => ['clé secrète ✓'];
+        yield 'binary' => ["\x00\x01\xff\xfe"];
+        yield 'long' => [str_repeat('0123456789', 500)];
+    }
+
+    /**
+     * @dataProvider provideScalars
+     */
+    public function testScalarIsEncryptedAsItsStringForm($value, string $expected): void
+    {
+        $encryptor = $this->createEncryptor();
+
+        $this->assertSame($expected, $encryptor->decrypt($encryptor->encrypt($value)));
+    }
+
+    public function provideScalars(): \Iterator
+    {
+        yield 'null' => [null, ''];
+        yield 'integer' => [42, '42'];
+        yield 'float' => [1.5, '1.5'];
+        yield 'stringable' => [new \Exception('message'), (string) new \Exception('message')];
+    }
+
+    /**
+     * @dataProvider provideCipherAlgorithms
+     */
+    public function testCipherAlgorithmIsSupported(string $cipherAlgorithm): void
+    {
+        foreach ([true, false] as $randomPseudoBytes) {
+            $encryptor = new Encryptor(self::SECRET_KEY, $cipherAlgorithm, true, true, $randomPseudoBytes);
+            $encryptor->setSecretIv(self::SECRET_IV);
+
+            foreach (['', 'a', str_repeat('a', 40)] as $plainText) {
+                $this->assertSame($plainText, $encryptor->decrypt($encryptor->encrypt($plainText)));
+            }
+        }
+    }
+
+    public function provideCipherAlgorithms(): \Iterator
+    {
+        yield ['aes-256-ctr'];
+        yield ['aes-256-cbc'];
+        yield ['aes-256-cfb'];
+        yield ['aes-256-ofb'];
+        yield ['aes-192-cbc'];
+        yield ['aes-128-ctr'];
+        yield ['aes-256-ecb'];
+        yield ['AES-256-CBC'];
+    }
+
     public function testRandomModeGivesADifferentOutputForEveryEncryption(): void
     {
-        $encryptor = $this->createEncryptor(true);
+        $encryptor = $this->createEncryptor();
 
         $first = $encryptor->encrypt(self::PLAIN_TEXT);
         $second = $encryptor->encrypt(self::PLAIN_TEXT);
@@ -39,12 +119,11 @@ class EncryptorTest extends TestCase
 
     public function testRandomModeNeverEncryptsTwoValuesWithTheSameIv(): void
     {
-        $encryptor = $this->createEncryptor(true);
-        $ivLength = openssl_cipher_iv_length(self::CIPHER_ALGORITHM);
+        $encryptor = $this->createEncryptor();
 
         $ivs = [];
         for ($i = 0; $i < 50; ++$i) {
-            $ivs[] = substr($this->decode($encryptor->encrypt('value-' . $i)), 0, $ivLength);
+            $ivs[] = substr($this->decode($encryptor->encrypt('value-' . $i)), self::IV_OFFSET, self::IV_LENGTH);
         }
 
         $this->assertCount(50, array_unique($ivs));
@@ -56,49 +135,314 @@ class EncryptorTest extends TestCase
 
         $this->assertSame($encryptor->encrypt(self::PLAIN_TEXT), $encryptor->encrypt(self::PLAIN_TEXT));
         $this->assertSame($encryptor->encrypt(self::PLAIN_TEXT), $this->createEncryptor(false)->encrypt(self::PLAIN_TEXT));
-        $this->assertNotSame($encryptor->encrypt(self::PLAIN_TEXT), $encryptor->encrypt('another_text'));
     }
 
-    public function testDeterministicOutputIsTheOneOfThePreviousVersion(): void
+    public function testDeterministicModeNeverEncryptsTwoDifferentInputsWithTheSameIv(): void
     {
-        $this->assertSame(self::DETERMINISTIC_OUTPUT_OF_6_5, $this->createEncryptor(false)->encrypt(self::PLAIN_TEXT));
+        $encryptor = $this->createEncryptor(false);
+
+        $ivs = [];
+        foreach ([[self::PLAIN_TEXT, ''], ['another_text', ''], [self::PLAIN_TEXT, 'context'], ['plain_', 'text']] as [$plainText, $context]) {
+            $ivs[] = substr($this->decode($encryptor->encrypt($plainText, $context)), self::IV_OFFSET, self::IV_LENGTH);
+        }
+
+        $this->assertCount(4, array_unique($ivs));
     }
 
-    /**
-     * @dataProvider provideOutputsOfThePreviousVersion
-     */
-    public function testValueEncryptedByThePreviousVersionIsStillDecrypted(string $encrypted, bool $randomPseudoBytes): void
+    public function testDeterministicOutputDependsOnTheSecretIv(): void
     {
-        $this->assertSame(self::PLAIN_TEXT, $this->createEncryptor($randomPseudoBytes)->decrypt($encrypted));
+        $encryptor = $this->createEncryptor(false);
+        $other = $this->createEncryptor(false);
+        $other->setSecretIv('anotherIv');
+
+        $this->assertNotSame($encryptor->encrypt(self::PLAIN_TEXT), $other->encrypt(self::PLAIN_TEXT));
+        $this->assertSame(self::PLAIN_TEXT, $encryptor->decrypt($other->encrypt(self::PLAIN_TEXT)));
     }
 
-    public function provideOutputsOfThePreviousVersion(): \Iterator
+    public function testDeterministicOutputNeverChangesBetweenVersions(): void
     {
-        yield 'deterministic' => [self::DETERMINISTIC_OUTPUT_OF_6_5, false];
-        yield 'random' => [self::RANDOM_OUTPUT_OF_6_5, true];
-        // The IV travels with the value: the mode it was encrypted in does not matter to read it back
-        yield 'random, read in deterministic mode' => [self::RANDOM_OUTPUT_OF_6_5, false];
+        $encryptor = $this->createEncryptor(false);
+
+        $this->assertSame(self::DETERMINISTIC_OUTPUT, $encryptor->encrypt(self::PLAIN_TEXT));
+        $this->assertSame(self::DETERMINISTIC_OUTPUT_WITH_CONTEXT, $encryptor->encrypt(self::PLAIN_TEXT, 'context'));
+        $this->assertSame(self::PLAIN_TEXT, $encryptor->decrypt(self::DETERMINISTIC_OUTPUT));
+        $this->assertSame(self::PLAIN_TEXT, $encryptor->decrypt(self::DETERMINISTIC_OUTPUT_WITH_CONTEXT, 'context'));
+    }
+
+    public function testValueIsReadWhateverTheModeItWasEncryptedIn(): void
+    {
+        $this->assertSame(self::PLAIN_TEXT, $this->createEncryptor(false)->decrypt($this->createEncryptor(true)->encrypt(self::PLAIN_TEXT)));
+        $this->assertSame(self::PLAIN_TEXT, $this->createEncryptor(true)->decrypt($this->createEncryptor(false)->encrypt(self::PLAIN_TEXT)));
     }
 
     public function testOutputIsSafeInAnUrl(): void
     {
-        $encryptor = $this->createEncryptor(true);
+        $encryptor = $this->createEncryptor();
 
-        for ($length = 1; $length <= 40; ++$length) {
+        for ($length = 0; $length <= 40; ++$length) {
             $plainText = str_repeat('x', $length);
             $encrypted = $encryptor->encrypt($plainText);
 
-            $this->assertSame(1, preg_match('/^[A-Za-z0-9_-]+$/', $encrypted));
+            $this->assertMatchesRegularExpression('/^[A-Za-z0-9_-]+$/', $encrypted);
             $this->assertSame($plainText, $encryptor->decrypt($encrypted));
         }
     }
 
-    private function createEncryptor(bool $randomPseudoBytes): Encryptor
+    public function testOutputCanBeStandardBase64(): void
+    {
+        $encryptor = new Encryptor(self::SECRET_KEY, self::CIPHER_ALGORITHM, true, false);
+
+        for ($length = 0; $length <= 40; ++$length) {
+            $plainText = str_repeat('x', $length);
+            $encrypted = $encryptor->encrypt($plainText);
+
+            $this->assertSame($encrypted, base64_encode((string) base64_decode($encrypted, true)));
+            $this->assertSame($plainText, $encryptor->decrypt($encrypted));
+        }
+    }
+
+    public function testOutputCanBeRawBytes(): void
+    {
+        $encryptor = new Encryptor(self::SECRET_KEY, self::CIPHER_ALGORITHM, false);
+        $encrypted = $encryptor->encrypt(self::PLAIN_TEXT);
+
+        $this->assertSame($this->decode($this->createEncryptor(false)->encrypt(self::PLAIN_TEXT))[0], $encrypted[0]);
+        $this->assertSame(1 + self::IV_LENGTH + \strlen(self::PLAIN_TEXT) + 16, \strlen($encrypted));
+        $this->assertSame(self::PLAIN_TEXT, $encryptor->decrypt($encrypted));
+    }
+
+    public function testModifyingAnyByteMakesTheValueRefused(): void
+    {
+        $encryptor = $this->createEncryptor();
+        $data = $this->decode($encryptor->encrypt(self::PLAIN_TEXT));
+
+        for ($position = 0, $length = \strlen($data); $position < $length; ++$position) {
+            $modified = $data;
+            $modified[$position] = \chr(\ord($modified[$position]) ^ 1);
+
+            $this->assertIsRefused($encryptor, $this->encode($modified));
+        }
+    }
+
+    public function testShortenedOrExtendedValueIsRefused(): void
+    {
+        $encryptor = $this->createEncryptor();
+        $data = $this->decode($encryptor->encrypt(self::PLAIN_TEXT));
+
+        for ($length = 0, $max = \strlen($data); $length < $max; ++$length) {
+            $this->assertIsRefused($encryptor, $this->encode(substr($data, 0, $length)));
+        }
+
+        $this->assertIsRefused($encryptor, $this->encode($data . "\x00"));
+        $this->assertIsRefused($encryptor, $this->encode("\x00" . $data));
+    }
+
+    public function testOnlyTheExactStringReturnedByEncryptIsAccepted(): void
+    {
+        $encryptor = $this->createEncryptor();
+        // 35 bytes: the last base64 character carries 2 bits that the decoding ignores
+        $encrypted = $encryptor->encrypt('42');
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+        $last = strpos($alphabet, substr($encrypted, -1));
+        $sameBytes = substr($encrypted, 0, -1) . $alphabet[$last ^ 1];
+
+        $this->assertSame($this->decode($encrypted), $this->decode($sameBytes));
+        $this->assertIsRefused($encryptor, $sameBytes);
+        $this->assertIsRefused($encryptor, $encrypted . '=');
+        $this->assertIsRefused($encryptor, ' ' . $encrypted);
+        $this->assertIsRefused($encryptor, substr($encrypted, 0, 10) . "\n" . substr($encrypted, 10));
+        $this->assertIsRefused($encryptor, strtr($encrypted, '-_', '+/') . '-');
+        $this->assertSame('42', $encryptor->decrypt($encrypted));
+    }
+
+    /**
+     * @dataProvider provideValuesThatWereNeverEncrypted
+     */
+    public function testValueThatWasNeverEncryptedIsRefused($value): void
+    {
+        $this->assertIsRefused($this->createEncryptor(), $value);
+    }
+
+    public function provideValuesThatWereNeverEncrypted(): \Iterator
+    {
+        yield 'empty' => [''];
+        yield 'plain value' => ['42'];
+        yield 'not base64' => ['%%%'];
+        yield 'random bytes' => [rtrim(strtr(base64_encode(random_bytes(64)), '+/', '-_'), '=')];
+        yield 'null' => [null];
+        yield 'integer' => [42];
+        yield 'array' => [['42']];
+    }
+
+    public function testValueEncryptedWithAnotherKeyIsRefused(): void
+    {
+        $encrypted = (new Encryptor('anotherKey'))->encrypt(self::PLAIN_TEXT);
+
+        $this->assertIsRefused($this->createEncryptor(), $encrypted);
+    }
+
+    public function testValueEncryptedWithAnotherCipherAlgorithmIsRefused(): void
+    {
+        $encrypted = (new Encryptor(self::SECRET_KEY, 'aes-256-cfb'))->encrypt(self::PLAIN_TEXT);
+
+        $this->assertIsRefused($this->createEncryptor(), $encrypted);
+    }
+
+    public function testContextMustBeTheOneTheValueWasEncryptedWith(): void
+    {
+        $encryptor = $this->createEncryptor();
+        $encrypted = $encryptor->encrypt(self::PLAIN_TEXT, 'user-1');
+
+        $this->assertSame(self::PLAIN_TEXT, $encryptor->decrypt($encrypted, 'user-1'));
+        $this->assertIsRefused($encryptor, $encrypted, 'user-2');
+        $this->assertIsRefused($encryptor, $encrypted);
+        $this->assertIsRefused($encryptor, $encryptor->encrypt(self::PLAIN_TEXT), 'user-1');
+    }
+
+    public function testValueEncryptedWithAPreviousKeyIsStillDecrypted(): void
+    {
+        $encrypted = (new Encryptor('oldKey'))->encrypt(self::PLAIN_TEXT, 'context');
+        $older = (new Encryptor('olderKey'))->encrypt(self::PLAIN_TEXT, 'context');
+        $encryptor = new Encryptor('newKey', self::CIPHER_ALGORITHM, true, true, true, ['oldKey', 'olderKey']);
+
+        $this->assertSame(self::PLAIN_TEXT, $encryptor->decrypt($encrypted, 'context'));
+        $this->assertSame(self::PLAIN_TEXT, $encryptor->decrypt($older, 'context'));
+        $this->assertIsRefused($encryptor, $encrypted, 'another-context');
+    }
+
+    public function testPreviousKeyNeverEncrypts(): void
+    {
+        $encryptor = new Encryptor('newKey', self::CIPHER_ALGORITHM, true, true, true, ['oldKey']);
+        $encrypted = $encryptor->encrypt(self::PLAIN_TEXT);
+
+        $this->assertSame(self::PLAIN_TEXT, (new Encryptor('newKey'))->decrypt($encrypted));
+        $this->assertIsRefused(new Encryptor('oldKey'), $encrypted);
+    }
+
+    public function testValueEncryptedWithAPreviousKeyNeedsReencryption(): void
+    {
+        $encryptor = new Encryptor('newKey', self::CIPHER_ALGORITHM, true, true, true, ['oldKey']);
+
+        $this->assertTrue($encryptor->needsReencryption((new Encryptor('oldKey'))->encrypt(self::PLAIN_TEXT, 'context'), 'context'));
+        $this->assertFalse($encryptor->needsReencryption($encryptor->encrypt(self::PLAIN_TEXT, 'context'), 'context'));
+    }
+
+    public function testNeedsReencryptionRefusesAValueThatCannotBeDecrypted(): void
+    {
+        $encryptor = $this->createEncryptor();
+
+        $this->expectException(DecryptionException::class);
+
+        $encryptor->needsReencryption((new Encryptor('anotherKey'))->encrypt(self::PLAIN_TEXT));
+    }
+
+    /**
+     * @dataProvider provideOutputsOfTheVersion6
+     */
+    public function testValueEncryptedByTheVersion6IsRefusedByDefault(string $encrypted): void
+    {
+        $this->assertIsRefused($this->createEncryptor(), $encrypted);
+    }
+
+    /**
+     * @dataProvider provideOutputsOfTheVersion6
+     */
+    public function testValueEncryptedByTheVersion6IsDecryptedWhenLegacyDecryptionIsEnabled(string $encrypted): void
+    {
+        $encryptor = new Encryptor(self::SECRET_KEY, self::CIPHER_ALGORITHM, true, true, true, [], true);
+
+        $this->assertSame(self::PLAIN_TEXT, $encryptor->decrypt($encrypted));
+        $this->assertTrue($encryptor->needsReencryption($encrypted));
+    }
+
+    public function provideOutputsOfTheVersion6(): \Iterator
+    {
+        yield 'deterministic' => [self::DETERMINISTIC_OUTPUT_OF_6_5];
+        yield 'random' => [self::RANDOM_OUTPUT_OF_6_5];
+    }
+
+    public function testLegacyDecryptionKeepsReadingTheNewValues(): void
+    {
+        $encryptor = new Encryptor(self::SECRET_KEY, self::CIPHER_ALGORITHM, true, true, true, [], true);
+        $encrypted = $encryptor->encrypt("  spaced \n", 'context');
+
+        $this->assertSame("  spaced \n", $encryptor->decrypt($encrypted, 'context'));
+        $this->assertFalse($encryptor->needsReencryption($encrypted, 'context'));
+        $this->assertSame("  spaced \n", $this->createEncryptor()->decrypt($encrypted, 'context'));
+    }
+
+    public function testLegacyDecryptionRefusesAValueThatIsNotBase64(): void
+    {
+        $this->assertIsRefused(new Encryptor(self::SECRET_KEY, self::CIPHER_ALGORITHM, true, true, true, [], true), '%%%');
+    }
+
+    public function testLegacyDecryptionRefusesAValueTheCipherAlgorithmRejects(): void
+    {
+        $encryptor = new Encryptor(self::SECRET_KEY, 'aes-256-cbc', true, true, true, [], true);
+
+        $this->assertIsRefused($encryptor, 'abc');
+    }
+
+    /**
+     * @dataProvider provideUnsupportedCipherAlgorithms
+     */
+    public function testUnsupportedCipherAlgorithmIsRefused(string $cipherAlgorithm, string $exception): void
+    {
+        $encryptor = new Encryptor(self::SECRET_KEY, $cipherAlgorithm);
+
+        $this->expectException($exception);
+
+        // OpenSSL raises a warning before failing
+        @$encryptor->encrypt(self::PLAIN_TEXT);
+    }
+
+    public function provideUnsupportedCipherAlgorithms(): \Iterator
+    {
+        yield 'authenticated mode' => ['aes-256-gcm', EncryptionException::class];
+        yield 'unknown' => ['not-a-cipher', \InvalidArgumentException::class];
+    }
+
+    /**
+     * @dataProvider provideEmptySecretKeys
+     */
+    public function testInvalidSecretKeyIsRefused(string $secretKey, array $previousSecretKeys): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        new Encryptor($secretKey, self::CIPHER_ALGORITHM, true, true, true, $previousSecretKeys);
+    }
+
+    public function provideEmptySecretKeys(): \Iterator
+    {
+        yield 'current key' => ['', []];
+        yield 'previous key' => [self::SECRET_KEY, ['oldKey', '']];
+        yield 'previous key that is not a string' => [self::SECRET_KEY, [42]];
+    }
+
+    private function assertIsRefused(Encryptor $encryptor, $encrypted, string $context = ''): void
+    {
+        try {
+            $encryptor->decrypt($encrypted, $context);
+        } catch (DecryptionException $e) {
+            $this->assertSame('NzoEncryptor: The value cannot be decrypted.', $e->getMessage());
+
+            return;
+        }
+
+        $this->fail('The value was decrypted.');
+    }
+
+    private function createEncryptor(bool $randomPseudoBytes = true): Encryptor
     {
         $encryptor = new Encryptor(self::SECRET_KEY, self::CIPHER_ALGORITHM, true, true, $randomPseudoBytes);
         $encryptor->setSecretIv(self::SECRET_IV);
 
         return $encryptor;
+    }
+
+    private function encode(string $data): string
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
     private function decode(string $encrypted): string

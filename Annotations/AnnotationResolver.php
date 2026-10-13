@@ -9,60 +9,47 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Nzo\UrlEncryptorBundle\Annotations;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
+use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class AnnotationResolver
 {
-    private $encryptor;
-    private $reader;
-    private $queryStringParams;
-
-    public function __construct(Encryptor $encryptor, ?AnnotationReader $reader = null, bool $queryStringParams = false)
-    {
-        $this->encryptor = $encryptor;
-        $this->reader = $reader;
-        $this->queryStringParams = $queryStringParams;
+    public function __construct(
+        private Encryptor $encryptor,
+        private bool $queryStringParams = false,
+    ) {
     }
 
-    public function onKernelController(ControllerEvent $event)
+    public function onKernelController(ControllerEvent $event): void
     {
-        if (is_array($controller = $event->getController())) {
-            $objectController = new \ReflectionObject($controller[0]);
-            $method = $objectController->getMethod($controller[1]);
-        } elseif (is_object($controller) && method_exists($controller, '__invoke')) {
-            $objectController = new \ReflectionObject($controller);
-            $method = $objectController->getMethod('__invoke');
-        } else {
+        $attributes = $event->getAttributes();
+        $decryptors = $attributes[ParamDecryptor::class] ?? [];
+        $encryptors = $attributes[ParamEncryptor::class] ?? [];
+
+        if ([] === $decryptors && [] === $encryptors) {
+            $this->assertNoDocBlockAnnotation($event);
+
             return;
         }
 
-        // Handle PHP8 Attributes
-        if (class_exists('ReflectionAttribute')) {
-            if ($this->hasAnnotation($method) && !$this->reader instanceof AnnotationReader) {
-                throw new \InvalidArgumentException('NzoEncryptor:  Annotation service not loaded, PHP Attributes should be used instead.');
+        $request = $event->getRequest();
+
+        foreach ($decryptors as $decryptor) {
+            if ($decryptor instanceof ParamDecryptor) {
+                $this->transformParams($request, $decryptor->getParams(), false);
             }
-            $annotations = $this->getAnnotation($method);
-        } elseif ($this->reader instanceof AnnotationReader) { // Handle Annotation only without Attributes
-            $annotations = $this->reader->getMethodAnnotations($method);
-        } else {
-            throw new \InvalidArgumentException('NzoEncryptor: Doctrine Annotation package must be installed, doctrine/annotations.');
         }
 
-        foreach ($annotations as $configuration) {
-            // handle php8 attribute
-            if (class_exists('ReflectionAttribute')) {
-                $configuration = $this->handleReflectionAttribute($configuration);
-            }
-
-            if ($configuration instanceof ParamEncryptor) {
-                $this->transformParams($event->getRequest(), $configuration->getParams(), true);
-            } elseif ($configuration instanceof ParamDecryptor) {
-                $this->transformParams($event->getRequest(), $configuration->getParams(), false);
+        foreach ($encryptors as $encryptor) {
+            if ($encryptor instanceof ParamEncryptor) {
+                $this->transformParams($request, $encryptor->getParams(), true);
             }
         }
     }
@@ -87,48 +74,45 @@ class AnnotationResolver
                 }
 
                 $value = $bag->get($param);
-                $bag->set($param, $encrypt ? $this->encryptor->encrypt($value) : $this->encryptor->decrypt($value));
+                // Nothing to transform: an optional parameter that was left out, or an empty one
+                if (null !== $value && '' !== $value) {
+                    $bag->set($param, $encrypt ? $this->encrypt($param, $value) : $this->decrypt($value));
+                }
 
                 break;
             }
         }
     }
 
-    private function handleReflectionAttribute($configuration)
+    private function encrypt(string $param, mixed $value): string
     {
-        if ($configuration instanceof \ReflectionAttribute
-            && \in_array($configuration->getName(), [ParamEncryptor::class, ParamDecryptor::class], true)) {
-            $class = $configuration->getName();
-            $arguments = $configuration->getArguments();
-            // First positional argument, or the same one passed by name: #[ParamDecryptor(params: ['id'])]
-            $params = $arguments[0] ?? $arguments['params'] ?? [];
-            $params = \is_array($params) ? $params : [];
-
-            return new $class($params);
+        if (!\is_scalar($value) && !$value instanceof \Stringable) {
+            throw new \UnexpectedValueException(sprintf('NzoEncryptor: The parameter "%s" cannot be encrypted, a scalar is expected, "%s" given.', $param, get_debug_type($value)));
         }
 
-        return $configuration;
+        return $this->encryptor->encrypt((string) $value);
+    }
+
+    private function decrypt(mixed $value): string
+    {
+        try {
+            return $this->encryptor->decrypt($value);
+        } catch (DecryptionException $e) {
+            // A value that was modified, or made up, designates nothing
+            throw new NotFoundHttpException('Not Found', $e);
+        }
     }
 
     /**
-     * @return array|mixed
+     * The annotations written in a doc block are no longer read: staying silent would hand the encrypted value to
+     * the controller.
      */
-    private function getAnnotation($method)
+    private function assertNoDocBlockAnnotation(ControllerEvent $event): void
     {
-        return $this->reader instanceof AnnotationReader && !empty($this->reader->getMethodAnnotations($method))
-            ? $this->reader->getMethodAnnotations($method)
-            : $method->getAttributes();
-    }
+        $docComment = $event->getControllerReflector()->getDocComment();
 
-    /**
-     * @param \ReflectionMethod $method
-     *
-     * @return bool
-     */
-    private function hasAnnotation($method)
-    {
-        $docComment = $method->getDocComment();
-
-        return false !== $docComment && (false !== strpos($docComment, '@ParamEncryptor') || false !== strpos($docComment, '@ParamDecryptor'));
+        if (false !== $docComment && (str_contains($docComment, '@ParamEncryptor') || str_contains($docComment, '@ParamDecryptor'))) {
+            throw new \LogicException(sprintf('NzoEncryptor: The annotations found on "%s()" are no longer supported, use the PHP attributes #[ParamEncryptor] and #[ParamDecryptor] instead.', $event->getControllerReflector()->getName()));
+        }
     }
 }

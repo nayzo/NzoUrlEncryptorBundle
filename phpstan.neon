@@ -1,4 +1,9 @@
 parameters:
-    level: 5
+    level: max
+    # The types written in a doc block are what a caller should pass, not what it does pass
+    treatPhpDocTypesAsCertain: false
+    paths:
+        - .
     excludePaths:
         - vendor/*
+        - Tests/*

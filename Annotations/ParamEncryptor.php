@@ -9,28 +9,29 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Nzo\UrlEncryptorBundle\Annotations;
 
 /**
- * @Annotation
+ * Lists the request parameters of a controller action that must be encrypted before the action runs.
  */
-#[\Attribute]
+#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_FUNCTION | \Attribute::IS_REPEATABLE)]
 class ParamEncryptor
 {
-    /** @var array */
-    private $params;
-
-    public function __construct(array $params = [])
-    {
-        $this->params = $params;
+    /**
+     * @param string[] $params
+     */
+    public function __construct(
+        private array $params = [],
+    ) {
     }
 
+    /**
+     * @return string[]
+     */
     public function getParams(): array
     {
-        if (isset($this->params['value']) && \is_array($this->params['value'])) {
-            return $this->params['value'];
-        }
-
         return $this->params;
     }
 }

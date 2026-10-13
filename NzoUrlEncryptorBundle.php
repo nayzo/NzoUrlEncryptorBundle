@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Nzo\UrlEncryptorBundle;
 
-use Nzo\UrlEncryptorBundle\DependencyInjection\Compiler\LoadAnnotationService;
 use Nzo\UrlEncryptorBundle\DependencyInjection\NzoEncryptorExtension;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -22,10 +22,5 @@ class NzoUrlEncryptorBundle extends Bundle
     public function getContainerExtension(): ?ExtensionInterface
     {
         return new NzoEncryptorExtension();
-    }
-
-    public function build(ContainerBuilder $container): void
-    {
-        $container->addCompilerPass(new LoadAnnotationService());
     }
 }
