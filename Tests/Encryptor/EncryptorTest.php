@@ -17,6 +17,8 @@ use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
 use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
 use Nzo\UrlEncryptorBundle\Exception\EncryptionException;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\CliDumper;
 
 class EncryptorTest extends TestCase
 {
@@ -126,19 +128,47 @@ class EncryptorTest extends TestCase
         unserialize(sprintf('O:%d:"%s":0:{}', \strlen(Encryptor::class), Encryptor::class));
     }
 
-    public function testDumpDoesNotShowTheKeys(): void
+    /**
+     * @dataProvider provideDumpers
+     */
+    public function testDumpDoesNotShowTheKeys(callable $dumper): void
     {
         $encryptor = new Encryptor(self::SECRET_KEY, self::CIPHER_ALGORITHM, true, true, false, ['previousKeyText']);
         $encryptor->setSecretIv(self::SECRET_IV);
         $encryptor->encrypt(self::PLAIN_TEXT);
 
-        $dump = print_r($encryptor, true);
+        $dump = $dumper($encryptor);
 
         $this->assertStringContainsString(self::CIPHER_ALGORITHM, $dump);
         $this->assertStringNotContainsString(self::SECRET_KEY, $dump);
         $this->assertStringNotContainsString('previousKeyText', $dump);
         $this->assertStringNotContainsString(self::SECRET_IV, $dump);
         $this->assertStringNotContainsString('KeyMaterial', $dump);
+        $this->assertStringNotContainsString('Keyring', $dump);
+    }
+
+    public function provideDumpers(): \Iterator
+    {
+        yield 'print_r' => [static fn (Encryptor $encryptor): string => print_r($encryptor, true)];
+        yield 'var_export' => [static fn (Encryptor $encryptor): string => var_export($encryptor, true)];
+        yield 'var_dump' => [static function (Encryptor $encryptor): string {
+            ob_start();
+            var_dump($encryptor);
+
+            return (string) ob_get_clean();
+        }];
+        yield 'dump' => [static fn (Encryptor $encryptor): string => (string) (new CliDumper())->dump((new VarCloner())->cloneVar($encryptor), true)];
+    }
+
+    public function testCloneHasItsOwnSecretIv(): void
+    {
+        $encryptor = $this->createEncryptor(false);
+        $clone = clone $encryptor;
+        $clone->setSecretIv('anotherIvText');
+
+        $this->assertSame(self::DETERMINISTIC_OUTPUT, $encryptor->encrypt(self::PLAIN_TEXT));
+        $this->assertNotSame(self::DETERMINISTIC_OUTPUT, $clone->encrypt(self::PLAIN_TEXT));
+        $this->assertSame(self::PLAIN_TEXT, $clone->decrypt($encryptor->encrypt(self::PLAIN_TEXT)));
     }
 
     public function testRandomModeGivesADifferentOutputForEveryEncryption(): void
@@ -417,6 +447,9 @@ class EncryptorTest extends TestCase
         $encryptor = new Encryptor(self::SECRET_KEY, 'aes-256-cbc', true, true, true, [], true);
 
         $this->assertIsRefused($encryptor, 'abc');
+
+        $this->expectException(DecryptionException::class);
+        $encryptor->needsReencryption('abc');
     }
 
     public function testKeyLengthReadFromTheNameIsTheOneOfOpenSsl(): void

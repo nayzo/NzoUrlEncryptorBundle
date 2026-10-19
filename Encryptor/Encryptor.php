@@ -37,17 +37,19 @@ class Encryptor
     private const KEY_LENGTH_PATTERN = '/^(?:aes|aria|camellia)-?(128|192|256)(?!.*(?:xts|siv))/i';
 
     /**
-     * @var list<string> The current key first, then the previous ones
+     * The secrets live here, out of the encryptor: dump(), var_dump() and var_export() show every property of an
+     * object, never a static one. An entry goes away with the handle it is mapped to.
+     *
+     * @var \WeakMap<object, Keyring>|null
      */
-    private array $secretKeys;
-    private bool $secretKeysChecked = false;
-    private string $secretIv = '';
-    private ?int $ivLength = null;
+    private static ?\WeakMap $keyrings = null;
 
     /**
-     * @var array<int, KeyMaterial>
+     * Holds nothing: it only maps this encryptor to its keyring.
      */
-    private array $keys = [];
+    private object $keyringHandle;
+    private bool $secretKeysChecked = false;
+    private ?int $ivLength = null;
 
     /**
      * @param string[] $previousSecretKeys Keys that were replaced by $secretKey: they still decrypt, they never encrypt
@@ -63,7 +65,15 @@ class Encryptor
         private bool $legacyDecryption = false,
     ) {
         // Checked on first use, see assertSecretKeys()
-        $this->secretKeys = [$secretKey, ...array_values($previousSecretKeys)];
+        $this->setKeyring(new Keyring([$secretKey, ...array_values($previousSecretKeys)]));
+    }
+
+    /**
+     * A clone gets its own copy of the secrets: setSecretIv() on one must not change the other.
+     */
+    public function __clone()
+    {
+        $this->setKeyring(clone $this->keyring());
     }
 
     /**
@@ -95,7 +105,7 @@ class Encryptor
             'formatBase64Output' => $this->formatBase64Output,
             'randomPseudoBytes' => $this->randomPseudoBytes,
             'legacyDecryption' => $this->legacyDecryption,
-            'previousSecretKeys' => \count($this->secretKeys) - 1,
+            'previousSecretKeys' => \count($this->keyring()->secretKeys) - 1,
         ];
     }
 
@@ -104,7 +114,7 @@ class Encryptor
      */
     public function setSecretIv(#[\SensitiveParameter] ?string $secretIv): void
     {
-        $this->secretIv = (string) $secretIv;
+        $this->keyring()->secretIv = (string) $secretIv;
     }
 
     /**
@@ -172,11 +182,18 @@ class Encryptor
         $data = $this->decode($encrypted);
         $index = $this->findKey($data, $context, $encrypted);
 
-        if (null === $index && !$this->legacyDecryption) {
+        if (null !== $index) {
+            return 0 !== $index;
+        }
+
+        if (!$this->legacyDecryption) {
             throw new DecryptionException();
         }
 
-        return 0 !== $index;
+        // Refused like decrypt() refuses it, when it cannot be read either
+        $this->decryptLegacy($data);
+
+        return true;
     }
 
     /**
@@ -189,7 +206,7 @@ class Encryptor
             return;
         }
 
-        foreach ($this->secretKeys as $secretKey) {
+        foreach ($this->keyring()->secretKeys as $secretKey) {
             if (!\is_string($secretKey)) {
                 throw new \InvalidArgumentException(sprintf('NzoEncryptor: A secret key must be a string, "%s" given.', get_debug_type($secretKey)));
             }
@@ -221,7 +238,7 @@ class Encryptor
         $message = substr($data, 0, -self::TAG_LENGTH);
         $tag = substr($data, -self::TAG_LENGTH);
 
-        foreach (array_keys($this->secretKeys) as $index) {
+        foreach (array_keys($this->keyring()->secretKeys) as $index) {
             if (hash_equals($this->tag($message, $this->key($index), $context), $tag)) {
                 return $index;
             }
@@ -257,7 +274,7 @@ class Encryptor
         $cipherText = substr($data, $this->ivLength());
 
         // A wrong value makes OpenSSL complain; the exception below is the only signal the caller needs
-        $plainText = @openssl_decrypt($cipherText, $this->cipherAlgorithm, $this->secretKeys[0], \OPENSSL_RAW_DATA, $iv);
+        $plainText = @openssl_decrypt($cipherText, $this->cipherAlgorithm, $this->keyring()->secretKeys[0], \OPENSSL_RAW_DATA, $iv);
         if (false === $plainText) {
             throw new DecryptionException();
         }
@@ -288,7 +305,8 @@ class Encryptor
             return random_bytes($ivLength);
         }
 
-        $input = pack('N', \strlen($this->secretIv)) . $this->secretIv . pack('N', \strlen($context)) . $context . $plainText;
+        $secretIv = $this->keyring()->secretIv;
+        $input = pack('N', \strlen($secretIv)) . $secretIv . pack('N', \strlen($context)) . $context . $plainText;
 
         return substr(hash_hmac(self::HASH_ALGORITHM, $input, $key->ivKey, true), 0, $ivLength);
     }
@@ -298,8 +316,9 @@ class Encryptor
      */
     private function key(int $index): KeyMaterial
     {
-        if (isset($this->keys[$index])) {
-            return $this->keys[$index];
+        $keyring = $this->keyring();
+        if (isset($keyring->keyMaterials[$index])) {
+            return $keyring->keyMaterials[$index];
         }
 
         $keyLength = $this->keyLength();
@@ -307,9 +326,9 @@ class Encryptor
         // The algorithm is part of the derivation: a value is refused, not garbled, once the algorithm changes.
         // Lowercased without strtolower(): before PHP 8.2 its result depends on the locale
         $purpose = self::KEY_PURPOSE . strtr($this->cipherAlgorithm, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz');
-        $secretKey = $this->secretKeys[$index];
+        $secretKey = $keyring->secretKeys[$index];
 
-        return $this->keys[$index] = new KeyMaterial(
+        return $keyring->keyMaterials[$index] = new KeyMaterial(
             hash_hkdf(self::HASH_ALGORITHM, $secretKey, $keyLength, $purpose . '/encryption'),
             hash_hkdf(self::HASH_ALGORITHM, $secretKey, self::SUBKEY_LENGTH, $purpose . '/authentication'),
             hash_hkdf(self::HASH_ALGORITHM, $secretKey, self::SUBKEY_LENGTH, $purpose . '/iv')
@@ -350,6 +369,18 @@ class Encryptor
         }
 
         return $this->ivLength = $ivLength;
+    }
+
+    private function keyring(): Keyring
+    {
+        return self::$keyrings[$this->keyringHandle] ?? throw new \LogicException('NzoEncryptor: The encryptor has no secret key.');
+    }
+
+    private function setKeyring(Keyring $keyring): void
+    {
+        $this->keyringHandle = new \stdClass();
+        self::$keyrings ??= new \WeakMap();
+        self::$keyrings[$this->keyringHandle] = $keyring;
     }
 
     private function unsupportedCipherAlgorithm(): \InvalidArgumentException
