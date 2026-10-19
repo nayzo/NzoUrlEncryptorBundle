@@ -46,7 +46,9 @@ class NzoEncryptorExtension extends Extension
         $config = $this->processConfiguration(new Configuration(), $configs);
 
         $cipherAlgorithm = $config['cipher_algorithm'];
-        if (!\in_array($cipherAlgorithm, openssl_get_cipher_methods(true), true)) {
+        // OpenSSL accepts a name in any case
+        $knownCipherAlgorithms = array_map(self::toLowerCase(...), openssl_get_cipher_methods(true));
+        if (!\in_array(self::toLowerCase($cipherAlgorithm), $knownCipherAlgorithms, true)) {
             throw new \InvalidArgumentException("NzoEncryptor: Unknown cipher algorithm {$cipherAlgorithm}");
         }
 
@@ -123,6 +125,14 @@ class NzoEncryptorExtension extends Extension
         } catch (ExceptionInterface $e) {
             throw new \InvalidArgumentException(sprintf('NzoEncryptor: The cipher algorithm "%s" is not supported. Use one that only needs a key and an IV, such as "aes-256-ctr" or "aes-256-cbc". The AEAD modes (GCM, CCM, OCB, ChaCha20-Poly1305) are not: the bundle already authenticates every value.', $cipherAlgorithm), 0, $e);
         }
+    }
+
+    /**
+     * Without strtolower(): before PHP 8.2 its result depends on the locale.
+     */
+    private static function toLowerCase(string $value): string
+    {
+        return strtr($value, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz');
     }
 
     private function cleanKey(ContainerBuilder $container, ?string $key): string

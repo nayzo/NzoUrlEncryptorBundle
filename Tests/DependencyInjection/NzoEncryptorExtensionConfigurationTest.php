@@ -207,6 +207,7 @@ class NzoEncryptorExtensionConfigurationTest extends TestCase
         yield ['aes-256-cbc'];
         yield ['aes-128-cbc'];
         yield ['aes-256-cfb'];
+        yield ['AES-256-CBC'];
     }
 
     private function load(array $config): ContainerBuilder
