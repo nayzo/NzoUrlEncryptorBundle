@@ -19,9 +19,9 @@ Which version do I need?
 | Symfony 6.4, 7 or 8 | **7** | `composer require nzo/url-encryptor-bundle` |
 | Symfony 4.4 to 6.3 | **6** | `composer require nzo/url-encryptor-bundle:^6.6` |
 
-The documentation of the version 6 is [on the 6.x branch](https://github.com/nayzo/NzoUrlEncryptorBundle/tree/6.x#readme).
+The documentation of version 6 is [on the 6.x branch](https://github.com/nayzo/NzoUrlEncryptorBundle/tree/6.x#readme).
 
-Coming from the version 6? Read [UPGRADE-7.0.md](UPGRADE-7.0.md) first: the encrypted values have a new format.
+Coming from version 6? Read [UPGRADE-7.0.md](UPGRADE-7.0.md) first: the encrypted values have a new format.
 
 Installation
 ------------
@@ -79,12 +79,16 @@ Encrypt the value when you build the link:
 {{ nzo_decrypt(value) }}
 ```
 
+`nzo_decrypt` throws an exception when the value cannot be decrypted, so the page fails. Decrypt in the controller when the value comes from the user.
+
 ### In a controller
 
 List the parameters to decrypt. They are decrypted before your action runs:
 
 ```php
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 class InvoiceController
 {
@@ -210,11 +214,11 @@ nzo_encryptor:
     previous_secret_keys: []                # keys that were replaced: they still decrypt
     secret_iv: ''                           # required when random_pseudo_bytes is false
     cipher_algorithm: aes-256-ctr
-    base64_encode: true                     # false: the output is raw bytes
+    base64_encode: true                     # false: the output is raw bytes, unusable in a URL
     format_base64_output: true              # true: the output is safe in a URL
     random_pseudo_bytes: true               # false: the same input gives the same output
     query_string_params: false              # true: the attributes also read the query string
-    legacy_decryption: false                # true: values encrypted by the version 6 are still read
+    legacy_decryption: false                # true: values encrypted by version 6 are still read
 ```
 
 A key or an IV written in the configuration file is limited to 100 characters. Read from the environment, it has no limit.

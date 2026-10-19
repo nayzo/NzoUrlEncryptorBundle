@@ -1,7 +1,7 @@
 Upgrade from 6.x to 7.0
 =======================
 
-The version 7 signs every encrypted value. A value that was modified is now refused instead of being decrypted to something else. This needed a new format, so read the first two points before you deploy.
+Version 7 signs every encrypted value. A value that was modified is now refused instead of being decrypted to something else. This needed a new format, so read the first two points before you deploy.
 
 Requirements
 ------------
@@ -9,10 +9,10 @@ Requirements
 - PHP 8.1 or higher
 - Symfony 6.4, 7 or 8
 
-If you cannot meet them, stay on the version 6: `composer require nzo/url-encryptor-bundle:^6.6`.
+If you cannot meet them, stay on version 6: `composer require nzo/url-encryptor-bundle:^6.6`.
 
-1. Values encrypted by the version 6
-------------------------------------
+1. Values encrypted by version 6
+--------------------------------
 
 They are refused by default. If such values are still around, in links you sent by e-mail, in bookmarks or in your database, enable `legacy_decryption`:
 
@@ -26,7 +26,7 @@ While it is enabled:
 
 - keep the same `secret_key` and the same `cipher_algorithm` as before, the old values depend on them;
 - every new value is encrypted in the new format;
-- the old values are read as the version 6 read them, without any check. A modified value is still accepted when it is presented in the old format.
+- the old values are read as version 6 read them, without any check. A modified value is still accepted when it is presented in the old format.
 
 So turn it off as soon as the old values are gone: when your old links have expired, or when you have encrypted your stored values again.
 
@@ -75,7 +75,7 @@ An action that still has the annotation throws an exception that says so, the fi
 5. Same output for the same input
 ---------------------------------
 
-With `random_pseudo_bytes: false`, the output for a given input is not the one the version 6 gave. If you stored such outputs to compare them or to search by them, compute them again.
+With `random_pseudo_bytes: false`, the output for a given input is not the one version 6 gave. If you stored such outputs to compare them or to search by them, compute them again.
 
 6. Parameters that are empty
 ----------------------------
@@ -85,7 +85,7 @@ With `random_pseudo_bytes: false`, the output for a given input is not the one t
 7. Cipher algorithms
 --------------------
 
-The algorithm is checked when the container is built. The ones that cannot encrypt every value with a key and an IV alone (GCM, CCM, OCB, ChaCha20-Poly1305, XTS, key wrapping) are refused there, with a message. They did not work in the version 6 either.
+The algorithm is checked when the container is built. The ones that cannot encrypt every value with a key and an IV alone (GCM, CCM, OCB, ChaCha20-Poly1305, XTS, key wrapping) are refused there, with a message. They did not work in version 6 either.
 
 8. If you extend or instantiate the classes of the bundle
 ---------------------------------------------------------
