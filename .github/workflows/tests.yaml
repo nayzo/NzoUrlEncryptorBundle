@@ -41,13 +41,11 @@ jobs:
                     - php-version: "8.4"
                       symfony-version: "7.4.*"
                     - php-version: "8.4"
-                      symfony-version: "8.0.*"
-                    - php-version: "8.4"
                     - php-version: "8.5"
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
@@ -61,7 +59,7 @@ jobs:
               run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
             - name: Cache the Composer packages
-              uses: actions/cache@v4
+              uses: actions/cache@v6
               with:
                   path: ${{ steps.composer-cache.outputs.dir }}
                   key: composer-${{ matrix.php-version }}-${{ matrix.symfony-version }}-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}
@@ -81,7 +79,7 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Setup PHP
               uses: shivammathur/setup-php@v2
