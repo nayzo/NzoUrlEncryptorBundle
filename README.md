@@ -107,6 +107,34 @@ Each parameter is looked up in the route parameters first, then in the request b
 
 If a value cannot be decrypted, because someone changed it or made it up, the response is a **404**. Your action is not called.
 
+#### Handle the failure in the action (Symfony 8.2 and later)
+
+With Symfony 8.2 or later, your action can handle the failure itself instead of the 404, for example to show a message and redirect. Add a nullable `DecryptionException` argument: it receives the failure, and the action is called.
+
+```php
+use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
+use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
+
+#[Route('/invoice/{id}', name: 'invoice_show')]
+#[ParamDecryptor(['id'])]
+public function show(string $id, ?DecryptionException $error = null): Response
+{
+    if (null !== $error) {
+        $this->addFlash('error', 'This link is invalid.');
+
+        return $this->redirectToRoute('invoice_list');
+    }
+
+    // $id is "42"
+}
+```
+
+- Always check `$error` first. When it is set, do not use the parameters: `$id` may hold the value received, not a trusted one.
+- An action without this argument still gets the 404.
+- Before Symfony 8.2, this argument receives nothing and the response stays a 404.
+
+See [Handling the Failures of Controller Attributes](https://symfony.com/doc/8.2/controller.html#controller-attribute-failures) in the Symfony documentation.
+
 ### As a service
 
 ```php

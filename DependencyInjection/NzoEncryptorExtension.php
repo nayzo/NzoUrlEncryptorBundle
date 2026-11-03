@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Nzo\UrlEncryptorBundle\DependencyInjection;
 
 use Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver;
+use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
+use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
 use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
 use Nzo\UrlEncryptorBundle\Exception\ExceptionInterface;
@@ -21,6 +23,7 @@ use Nzo\UrlEncryptorBundle\Twig\EncryptorExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\HttpKernel\Attribute\RecoverableAttribute;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Twig\Extension\AbstractExtension;
 
@@ -92,11 +95,20 @@ class NzoEncryptorExtension extends Extension
         ;
         $container->setAlias(Encryptor::class, 'nzo_encryptor');
 
-        $container
+        $resolver = $container
             ->register('nzo.annotation_resolver', AnnotationResolver::class)
             ->setArguments([new Reference('nzo_encryptor'), '%nzo_encryptor.query_string_params%'])
-            ->addTag('kernel.event_listener', ['event' => KernelEvents::CONTROLLER, 'method' => 'onKernelController'])
         ;
+
+        if (class_exists(RecoverableAttribute::class)) {
+            // Symfony 8.2 and later: the failures of #[ParamDecryptor] can be passed to the controller
+            foreach ([ParamDecryptor::class, ParamEncryptor::class] as $attribute) {
+                $resolver->addTag('kernel.event_listener', ['event' => KernelEvents::CONTROLLER . '.' . $attribute, 'method' => 'onControllerAttribute']);
+            }
+            $resolver->addTag('kernel.event_listener', ['event' => KernelEvents::CONTROLLER, 'method' => 'onKernelControllerWithoutAttributes']);
+        } else {
+            $resolver->addTag('kernel.event_listener', ['event' => KernelEvents::CONTROLLER, 'method' => 'onKernelController']);
+        }
 
         if (class_exists(AbstractExtension::class)) {
             $container

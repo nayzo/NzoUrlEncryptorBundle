@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace Nzo\UrlEncryptorBundle\Tests\DependencyInjection;
 
 use Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver;
+use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
+use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
 use Nzo\UrlEncryptorBundle\DependencyInjection\NzoEncryptorExtension;
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
 use Nzo\UrlEncryptorBundle\Twig\EncryptorExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Attribute\RecoverableAttribute;
 
 class NzoEncryptorExtensionConfigurationTest extends TestCase
 {
@@ -90,7 +93,7 @@ class NzoEncryptorExtensionConfigurationTest extends TestCase
         $resolver = $container->getDefinition('nzo.annotation_resolver');
         $this->assertSame(AnnotationResolver::class, $resolver->getClass());
         $this->assertSame('nzo_encryptor', (string) $resolver->getArgument(0));
-        $this->assertSame([['event' => 'kernel.controller', 'method' => 'onKernelController']], $resolver->getTag('kernel.event_listener'));
+        $this->assertSame($this->expectedListeners(), $resolver->getTag('kernel.event_listener'));
 
         $twigExtension = $container->getDefinition('nzo.twig.encryptor_extension');
         $this->assertSame(EncryptorExtension::class, $twigExtension->getClass());
@@ -216,5 +219,21 @@ class NzoEncryptorExtensionConfigurationTest extends TestCase
         (new NzoEncryptorExtension())->load([$config], $container);
 
         return $container;
+    }
+
+    /**
+     * @return list<array{event: string, method: string}>
+     */
+    private function expectedListeners(): array
+    {
+        if (!class_exists(RecoverableAttribute::class)) {
+            return [['event' => 'kernel.controller', 'method' => 'onKernelController']];
+        }
+
+        return [
+            ['event' => 'kernel.controller.' . ParamDecryptor::class, 'method' => 'onControllerAttribute'],
+            ['event' => 'kernel.controller.' . ParamEncryptor::class, 'method' => 'onControllerAttribute'],
+            ['event' => 'kernel.controller', 'method' => 'onKernelControllerWithoutAttributes'],
+        ];
     }
 }

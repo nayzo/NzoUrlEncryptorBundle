@@ -7,3 +7,8 @@ parameters:
     excludePaths:
         - vendor/*
         - Tests/*
+    # Symfony 8.2 classes, missing when the analysis runs on an older version
+    ignoreErrors:
+        -
+            message: '#Symfony\\Component\\HttpKernel\\(Event\\ControllerAttributeEvent|Attribute\\RecoverableAttribute)#'
+            reportUnmatched: false

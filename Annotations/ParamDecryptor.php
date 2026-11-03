@@ -13,10 +13,17 @@ declare(strict_types=1);
 
 namespace Nzo\UrlEncryptorBundle\Annotations;
 
+use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
+use Symfony\Component\HttpKernel\Attribute\RecoverableAttribute;
+
 /**
  * Lists the request parameters of a controller action that must be decrypted before the action runs.
+ *
+ * Since Symfony 8.2, an action can receive the failure in a "?DecryptionException $error = null" argument instead of
+ * the 404 response. Before Symfony 8.2, RecoverableAttribute does not exist and is never read: nothing changes.
  */
 #[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_FUNCTION | \Attribute::IS_REPEATABLE)]
+#[RecoverableAttribute(DecryptionException::class)]
 class ParamDecryptor
 {
     /**

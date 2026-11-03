@@ -15,10 +15,14 @@ namespace Nzo\UrlEncryptorBundle\Tests\Annotation;
 
 use Nzo\UrlEncryptorBundle\Annotations\AnnotationResolver;
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
+use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
+use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
 use Nzo\UrlEncryptorBundle\Tests\Annotation\Fixtures\DummyController;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\RecoverableAttribute;
+use Symfony\Component\HttpKernel\Event\ControllerAttributeEvent;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -295,6 +299,72 @@ class AnnotationResolverTest extends TestCase
         $this->resolve(Request::create('/'), 'decryptWithDocBlockAnnotation');
     }
 
+    public function testOnlyTheDecryptorPassesItsFailureToTheController(): void
+    {
+        // Read without being instantiated: the attribute class only exists since Symfony 8.2
+        $recoverable = (new \ReflectionClass(ParamDecryptor::class))->getAttributes(RecoverableAttribute::class);
+
+        $this->assertCount(1, $recoverable);
+        $this->assertSame([DecryptionException::class], $recoverable[0]->getArguments());
+        $this->assertSame([], (new \ReflectionClass(ParamEncryptor::class))->getAttributes(RecoverableAttribute::class));
+    }
+
+    public function testEachAttributeIsAppliedByItsOwnEvent(): void
+    {
+        if (!class_exists(ControllerAttributeEvent::class)) {
+            $this->markTestSkipped('The controller attribute events need Symfony 8.1 or later.');
+        }
+
+        $request = Request::create('/');
+        $request->attributes->set('id', $this->encryptor->encrypt('some_data'));
+        $request->attributes->set('name', 'some_name');
+        $event = $this->controllerEvent($request, [new DummyController(), 'decryptAndEncrypt']);
+        $resolver = new AnnotationResolver($this->encryptor);
+
+        $resolver->onControllerAttribute(new ControllerAttributeEvent(new ParamDecryptor(['id']), $event));
+        $resolver->onControllerAttribute(new ControllerAttributeEvent(new ParamEncryptor(['name']), $event));
+
+        $this->assertSame('some_data', $request->attributes->get('id'));
+        $this->assertSame('some_name', $this->encryptor->decrypt($request->attributes->get('name')));
+    }
+
+    public function testFailureOfTheAttributeEventKeepsTheDecryptionException(): void
+    {
+        if (!class_exists(ControllerAttributeEvent::class)) {
+            $this->markTestSkipped('The controller attribute events need Symfony 8.1 or later.');
+        }
+
+        $request = Request::create('/');
+        $request->attributes->set('id', 'not_encrypted');
+        $event = $this->controllerEvent($request, [new DummyController(), 'decrypt']);
+
+        try {
+            (new AnnotationResolver($this->encryptor))->onControllerAttribute(new ControllerAttributeEvent(new ParamDecryptor(['id']), $event));
+            $this->fail('The value cannot be decrypted.');
+        } catch (NotFoundHttpException $e) {
+            // Symfony looks for it in the previous exceptions to pass it to the controller
+            $this->assertInstanceOf(DecryptionException::class, $e->getPrevious());
+        }
+    }
+
+    public function testListenerWithoutAttributesLeavesTheAttributesToTheirEvents(): void
+    {
+        $request = Request::create('/');
+        $request->attributes->set('id', $encrypted = $this->encryptor->encrypt('some_data'));
+
+        (new AnnotationResolver($this->encryptor))->onKernelControllerWithoutAttributes($this->controllerEvent($request, [new DummyController(), 'decrypt']));
+
+        $this->assertSame($encrypted, $request->attributes->get('id'));
+    }
+
+    public function testListenerWithoutAttributesRefusesTheDocBlockAnnotation(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage(DummyController::class . '::decryptWithDocBlockAnnotation()');
+
+        (new AnnotationResolver($this->encryptor))->onKernelControllerWithoutAttributes($this->controllerEvent(Request::create('/'), [new DummyController(), 'decryptWithDocBlockAnnotation']));
+    }
+
     private function resolve(Request $request, string $action, bool $queryStringParams = false): void
     {
         $this->dispatch($request, [new DummyController(), $action], $queryStringParams);
@@ -302,13 +372,16 @@ class AnnotationResolverTest extends TestCase
 
     private function dispatch(Request $request, callable $controller, bool $queryStringParams): void
     {
-        $event = new ControllerEvent(
+        (new AnnotationResolver($this->encryptor, $queryStringParams))->onKernelController($this->controllerEvent($request, $controller));
+    }
+
+    private function controllerEvent(Request $request, callable $controller): ControllerEvent
+    {
+        return new ControllerEvent(
             $this->createMock(HttpKernelInterface::class),
             $controller,
             $request,
             HttpKernelInterface::MAIN_REQUEST
         );
-
-        (new AnnotationResolver($this->encryptor, $queryStringParams))->onKernelController($event);
     }
 }

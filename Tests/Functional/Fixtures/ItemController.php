@@ -15,6 +15,7 @@ namespace Nzo\UrlEncryptorBundle\Tests\Functional\Fixtures;
 
 use Nzo\UrlEncryptorBundle\Annotations\ParamDecryptor;
 use Nzo\UrlEncryptorBundle\Annotations\ParamEncryptor;
+use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -30,6 +31,12 @@ class ItemController
     public function search(Request $request): Response
     {
         return new Response('search ' . $request->query->get('id'));
+    }
+
+    #[ParamDecryptor(['id'])]
+    public function edit(string $id, ?DecryptionException $error = null): Response
+    {
+        return new Response(null === $error ? 'edit ' . $id : 'invalid link');
     }
 
     #[ParamDecryptor(['id'], context: 'invoice')]
