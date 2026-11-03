@@ -74,6 +74,7 @@ class TestKernel extends Kernel
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
         $routes->add('item_show', '/item/{id}')->controller([ItemController::class, 'show']);
+        $routes->add('item_edit', '/edit/{id}')->controller([ItemController::class, 'edit']);
         $routes->add('item_invoice', '/invoice/{id}')->controller([ItemController::class, 'invoice']);
         $routes->add('item_plain', '/plain')->controller([ItemController::class, 'plain']);
         $routes->add('item_search', '/search')->controller([ItemController::class, 'search']);

@@ -18,6 +18,7 @@ use Nzo\UrlEncryptorBundle\Tests\Functional\Fixtures\TestKernel;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\RecoverableAttribute;
 
 /**
  * Boots a real application: the bundle is configured, wired and called the way an application does it.
@@ -61,6 +62,23 @@ class BundleTest extends TestCase
 
         $this->assertSame(404, $kernel->handle(Request::create('/item/' . $modified))->getStatusCode());
         $this->assertSame(404, $kernel->handle(Request::create('/item/42'))->getStatusCode());
+    }
+
+    public function testControllerThatAsksForTheDecryptionFailureReceivesIt(): void
+    {
+        $kernel = $this->boot();
+
+        $this->assertSame('edit 42', $kernel->handle(Request::create('/edit/' . $this->encryptor($kernel)->encrypt(42)))->getContent());
+
+        $response = $kernel->handle(Request::create('/edit/42'));
+
+        if (class_exists(RecoverableAttribute::class)) {
+            $this->assertSame(200, $response->getStatusCode());
+            $this->assertSame('invalid link', $response->getContent());
+        } else {
+            // Before Symfony 8.2, the failure cannot be passed to the controller
+            $this->assertSame(404, $response->getStatusCode());
+        }
     }
 
     public function testValueOfOneRouteIsRefusedByAnotherWhenTheyHaveAContext(): void

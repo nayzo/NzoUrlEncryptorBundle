@@ -16,6 +16,7 @@ namespace Nzo\UrlEncryptorBundle\Annotations;
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
 use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Event\ControllerAttributeEvent;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -51,6 +52,40 @@ class AnnotationResolver
             if ($encryptor instanceof ParamEncryptor) {
                 $this->transformParams($request, $encryptor->getParams(), $encryptor->getContext(), true);
             }
+        }
+    }
+
+    /**
+     * Since Symfony 8.2, each attribute is handled by its own event: a failure of #[ParamDecryptor] can then be passed
+     * to the controller, see RecoverableAttribute.
+     *
+     * @param ControllerAttributeEvent<object, \Symfony\Component\HttpKernel\Event\KernelEvent> $event
+     */
+    public function onControllerAttribute(ControllerAttributeEvent $event): void
+    {
+        $kernelEvent = $event->kernelEvent;
+        $attribute = $event->attribute;
+
+        if (!$kernelEvent instanceof ControllerEvent) {
+            return;
+        }
+
+        if ($attribute instanceof ParamDecryptor) {
+            $this->transformParams($kernelEvent->getRequest(), $attribute->getParams(), $attribute->getContext(), false);
+        } elseif ($attribute instanceof ParamEncryptor) {
+            $this->transformParams($kernelEvent->getRequest(), $attribute->getParams(), $attribute->getContext(), true);
+        }
+    }
+
+    /**
+     * Since Symfony 8.2, the attributes are handled by onControllerAttribute(): only the doc blocks are left to check.
+     */
+    public function onKernelControllerWithoutAttributes(ControllerEvent $event): void
+    {
+        $attributes = $event->getAttributes();
+
+        if (!isset($attributes[ParamDecryptor::class]) && !isset($attributes[ParamEncryptor::class])) {
+            $this->assertNoDocBlockAnnotation($event);
         }
     }
 
