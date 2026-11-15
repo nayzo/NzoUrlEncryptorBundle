@@ -233,13 +233,23 @@ if ($this->encryptor->needsReencryption($stored)) {
 
 Once nothing uses the old key any more, remove it.
 
+To change keys without editing the configuration, read the whole list from one environment variable, comma separated:
+
+```yaml
+nzo_encryptor:
+    secret_key: '%env(NZO_ENCRYPTOR_KEY)%'
+    previous_secret_keys: '%env(csv:NZO_ENCRYPTOR_PREVIOUS_KEYS)%'
+```
+
+An empty `NZO_ENCRYPTOR_PREVIOUS_KEYS` means no previous key: the line can stay in place between two key changes.
+
 Configuration reference
 -----------------------
 
 ```yaml
 nzo_encryptor:
     secret_key: '%env(NZO_ENCRYPTOR_KEY)%'  # required
-    previous_secret_keys: []                # keys that were replaced: they still decrypt
+    previous_secret_keys: []                # keys that were replaced: they still decrypt (a list, or '%env(csv:VAR)%')
     secret_iv: ''                           # required when random_pseudo_bytes is false
     cipher_algorithm: aes-256-ctr
     base64_encode: true                     # false: the output is raw bytes, unusable in a URL

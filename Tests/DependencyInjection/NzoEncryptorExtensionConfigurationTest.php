@@ -153,6 +153,28 @@ class NzoEncryptorExtensionConfigurationTest extends TestCase
         $this->load(['secret_key' => 'encryptionKeyText', 'previous_secret_keys' => ['']]);
     }
 
+    public function testPreviousSecretKeysCanBeAnEnvironmentVariableHoldingTheList(): void
+    {
+        // What the kernel hands to the extension: the placeholder standing for the variable
+        $container = new ContainerBuilder();
+        $envPlaceholder = $container->getParameterBag()->get('env(csv:NZO_ENCRYPTOR_PREVIOUS_KEYS)');
+        (new NzoEncryptorExtension())->load([['secret_key' => 'encryptionKeyText', 'previous_secret_keys' => $envPlaceholder]], $container);
+
+        $placeholder = $container->getParameter('nzo_encryptor.previous_secret_keys');
+        $this->assertIsString($placeholder);
+        $usedEnvs = [];
+        $container->resolveEnvPlaceholders($placeholder, null, $usedEnvs);
+        $this->assertSame(['csv:NZO_ENCRYPTOR_PREVIOUS_KEYS'], array_keys($usedEnvs));
+    }
+
+    public function testPreviousSecretKeysAsAPlainStringIsRefused(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("'previous_secret_keys' must be a list of keys, or an environment variable");
+
+        $this->load(['secret_key' => 'encryptionKeyText', 'previous_secret_keys' => 'oldKey']);
+    }
+
     public function testSecretIvIsRequiredWhenRandomPseudoBytesIsDisabled(): void
     {
         $this->expectException(\InvalidArgumentException::class);

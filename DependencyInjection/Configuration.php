@@ -30,9 +30,30 @@ class Configuration implements ConfigurationInterface
                     ->isRequired()
                     ->cannotBeEmpty()
                 ->end()
-                ->arrayNode('previous_secret_keys')
-                    ->info('Keys replaced by "secret_key": the values they encrypted are still decrypted.')
-                    ->scalarPrototype()->cannotBeEmpty()->end()
+                // A variable node: unlike an array node, it accepts an environment variable holding the whole list
+                ->variableNode('previous_secret_keys')
+                    ->info('Keys replaced by "secret_key": the values they encrypted are still decrypted. A list, or an environment variable holding one, such as "%env(csv:NZO_ENCRYPTOR_PREVIOUS_KEYS)%".')
+                    ->defaultValue([])
+                    ->validate()
+                        ->ifTrue(static fn (mixed $keys): bool => !\is_array($keys) && !\is_string($keys))
+                        ->thenInvalid('"previous_secret_keys" must be a list of keys, or an environment variable holding a list.')
+                    ->end()
+                    ->validate()
+                        ->ifTrue(static function (mixed $keys): bool {
+                            if (!\is_array($keys)) {
+                                return false;
+                            }
+
+                            foreach ($keys as $key) {
+                                if (!\is_scalar($key) || '' === $key) {
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        })
+                        ->thenInvalid('"previous_secret_keys" cannot hold an empty or a non scalar key.')
+                    ->end()
                 ->end()
                 ->scalarNode('secret_iv')
                     ->info('Required when "random_pseudo_bytes" is disabled.')
