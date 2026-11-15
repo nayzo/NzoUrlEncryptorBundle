@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Nzo\UrlEncryptorBundle\Tests\Functional;
 
 use Nzo\UrlEncryptorBundle\Encryptor\Encryptor;
+use Nzo\UrlEncryptorBundle\Exception\DecryptionException;
 use Nzo\UrlEncryptorBundle\Tests\Functional\Fixtures\TestKernel;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -155,6 +156,42 @@ class BundleTest extends TestCase
             $this->assertSame('42', $encryptor->decrypt((new Encryptor(self::SECRET_KEY))->encrypt(42)));
         } finally {
             unset($_ENV[$current], $_SERVER[$current], $_ENV[$previous], $_SERVER[$previous]);
+        }
+    }
+
+    public function testTheListOfPreviousKeysCanBeReadFromTheEnvironment(): void
+    {
+        $name = 'NZO_ENCRYPTOR_TEST_PREVIOUS_SECRET_KEYS_LIST';
+        $_ENV[$name] = $_SERVER[$name] = 'olderKey,' . self::SECRET_KEY;
+
+        try {
+            $kernel = $this->boot(['secret_key' => 'newKey', 'previous_secret_keys' => '%env(csv:' . $name . ')%']);
+            $encryptor = $this->encryptor($kernel);
+            $encrypted = (new Encryptor(self::SECRET_KEY))->encrypt(42);
+
+            $this->assertSame('42', $encryptor->decrypt($encrypted));
+            $this->assertSame('42', $encryptor->decrypt((new Encryptor('olderKey'))->encrypt(42)));
+            $this->assertTrue($encryptor->needsReencryption($encrypted));
+            $this->assertSame('42', (new Encryptor('newKey'))->decrypt($encryptor->encrypt(42)));
+        } finally {
+            unset($_ENV[$name], $_SERVER[$name]);
+        }
+    }
+
+    public function testAnEmptyListOfPreviousKeysFromTheEnvironmentMeansNone(): void
+    {
+        $name = 'NZO_ENCRYPTOR_TEST_PREVIOUS_SECRET_KEYS_EMPTY';
+        $_ENV[$name] = $_SERVER[$name] = '';
+
+        try {
+            $encryptor = $this->encryptor($this->boot(['secret_key' => 'newKey', 'previous_secret_keys' => '%env(csv:' . $name . ')%']));
+
+            $this->assertSame('42', $encryptor->decrypt($encryptor->encrypt(42)));
+
+            $this->expectException(DecryptionException::class);
+            $encryptor->decrypt((new Encryptor(self::SECRET_KEY))->encrypt(42));
+        } finally {
+            unset($_ENV[$name], $_SERVER[$name]);
         }
     }
 

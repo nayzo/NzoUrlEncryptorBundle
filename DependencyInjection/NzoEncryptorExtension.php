@@ -36,7 +36,7 @@ class NzoEncryptorExtension extends Extension
         /**
          * @var array{
          *     secret_key: scalar,
-         *     previous_secret_keys: array<scalar>,
+         *     previous_secret_keys: array<scalar>|string,
          *     secret_iv: scalar|null,
          *     cipher_algorithm: string,
          *     base64_encode: bool,
@@ -65,8 +65,8 @@ class NzoEncryptorExtension extends Extension
         $cleanKey = fn (mixed $key): string => $this->cleanKey($container, \is_scalar($key) ? (string) $key : null);
 
         $secretKey = $cleanKey($config['secret_key']);
-        $previousSecretKeys = array_map($cleanKey, array_values($config['previous_secret_keys']));
-        if (\in_array('', [$secretKey, ...$previousSecretKeys], true)) {
+        $previousSecretKeys = $this->previousSecretKeys($container, $config['previous_secret_keys'], $cleanKey);
+        if (\in_array('', [$secretKey, ...(\is_array($previousSecretKeys) ? $previousSecretKeys : [])], true)) {
             throw new \InvalidArgumentException("NzoEncryptor: 'secret_key' and 'previous_secret_keys' cannot hold an empty key.");
         }
 
@@ -145,6 +145,31 @@ class NzoEncryptorExtension extends Extension
     private static function toLowerCase(string $value): string
     {
         return strtr($value, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz');
+    }
+
+    /**
+     * Either a list of keys, or the placeholder of an environment variable holding the whole list,
+     * such as "%env(csv:NZO_ENCRYPTOR_PREVIOUS_KEYS)%": the list then changes without touching the
+     * configuration, and an empty variable means no previous key.
+     *
+     * @param array<scalar>|string    $previousSecretKeys
+     * @param \Closure(mixed): string $cleanKey
+     *
+     * @return list<string>|string The keys, or the placeholder resolved at runtime
+     */
+    private function previousSecretKeys(ContainerBuilder $container, array|string $previousSecretKeys, \Closure $cleanKey): array|string
+    {
+        if (\is_array($previousSecretKeys)) {
+            return array_map($cleanKey, array_values($previousSecretKeys));
+        }
+
+        $usedEnvs = [];
+        $container->resolveEnvPlaceholders($previousSecretKeys, null, $usedEnvs);
+        if ([] === $usedEnvs) {
+            throw new \InvalidArgumentException("NzoEncryptor: 'previous_secret_keys' must be a list of keys, or an environment variable holding a list, such as \"%env(csv:NZO_ENCRYPTOR_PREVIOUS_KEYS)%\".");
+        }
+
+        return $previousSecretKeys;
     }
 
     private function cleanKey(ContainerBuilder $container, ?string $key): string
